@@ -1,5 +1,6 @@
   import { useEffect, useMemo, useState } from "react";
   import { useSearchParams } from "react-router-dom";
+  import { useAuth } from "../auth/AuthContext";
   import api from "../api/client";
   import {
     Box, Card, CardContent, Stack, Typography, Chip, Button,
@@ -416,6 +417,7 @@
     const [searchParams, setSearchParams] = useSearchParams();
     const [gallery,       setGallery]       = useState([]);
     const [previewItem,   setPreviewItem]   = useState(null);
+    const [previewZoom,   setPreviewZoom]   = useState(1);
     const [hovered,       setHovered]       = useState(null);
     const [selectMode,    setSelectMode]    = useState(false);
     const [selectedIds,   setSelectedIds]   = useState(new Set());
@@ -423,6 +425,8 @@
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [confirmDialog, setConfirmDialog] = useState({ open:false, type:"", id:null, count:0 });
     const PER_PAGE_OPTIONS = [6,12,24,48];
+    const { user } = useAuth();
+    const authorName = user?.name || user?.username || "Guest";
     const { search, dateFrom, dateTo } = readGalleryFilterState(searchParams);
     const filterKey = `${search}\u0000${dateFrom}\u0000${dateTo}`;
     const [pagination, setPagination] = useState({ filterKey, page:1 });
@@ -442,6 +446,11 @@
 
     const updateGallerySearchParams = (nextValues) => {
       setSearchParams(buildGalleryFilterSearchParams(searchParams, nextValues), { replace:true });
+    };
+
+    const openPreview = (item) => {
+      setPreviewZoom(1);
+      setPreviewItem(item);
     };
 
     const handleSearchChange = (value) => {
@@ -996,7 +1005,7 @@
                         {!selectMode && (
                           <Box sx={{ position:"absolute", top:8, right:8, zIndex:2 }}>
                             <IconButton
-                              onClick={()=>setPreviewItem(item)}
+                              onClick={()=>openPreview(item)}
                               size="small"
                               sx={{
                                 width:32, height:32, borderRadius:"10px",
@@ -1054,6 +1063,10 @@
                           {item.fileName||item.filename||"-"}
                         </Typography>
 
+                        <Typography sx={{ ...F, color:"#475569", fontSize:"0.70rem", fontWeight:600, mb:"8px" }}>
+                          By {authorName}
+                        </Typography>
+
                         <Box sx={{ flexShrink:0, mb:"8px", minHeight:`calc(0.73rem * 1.5 * ${PROMPT_LINES})` }}>
                           {displayPrompt ? (
                             <Typography
@@ -1096,7 +1109,7 @@
                                 size="small"
                                 variant="contained"
                                 startIcon={<VisibilityRoundedIcon sx={{ fontSize:"14px !important" }}/>}
-                                onClick={()=>setPreviewItem(item)}
+                                onClick={()=>openPreview(item)}
                                 sx={{
                                   ...pill({ fontSize:"11px", py:0.65, flex:1, minWidth:0, boxShadow:"none" }),
                                   background:"linear-gradient(135deg,#233971,#2e4fa3)",
@@ -1277,21 +1290,68 @@
               </Stack>
             </DialogTitle>
 
-            <DialogContent sx={{ pt:2.5 }}>
+            <DialogContent sx={{ pt:2.5, maxHeight:"80vh", overflowY:"auto" }}>
               {previewItem && (
                 <Stack spacing={2.4}>
                   <Box
-                    component="img"
-                    src={previewItem.imageUrl}
-                    alt={previewItem.prompt||"Preview"}
                     sx={{
-                      width:"100%", maxHeight:"68vh", objectFit:"contain",
+                      width:"100%",
+                      maxHeight:"68vh",
+                      overflow:"auto",
                       borderRadius:"20px",
                       background:"linear-gradient(135deg,rgba(232,237,248,0.9),rgba(234,240,251,0.9))",
                       border:"1px solid rgba(35,57,113,0.18)",
                       animation:"fadeR 0.4s ease",
+                      display:"flex",
+                      justifyContent:"center",
+                      alignItems:"center",
+                      p:1,
                     }}
-                  />
+                  >
+                    <Box
+                      component="img"
+                      src={previewItem.imageUrl}
+                      alt={previewItem.prompt||"Preview"}
+                      sx={{
+                        width:"auto",
+                        maxWidth:"100%",
+                        height:"auto",
+                        maxHeight:"66vh",
+                        objectFit:"contain",
+                        transform:`scale(${previewZoom})`,
+                        transformOrigin:"center center",
+                        transition:"transform 0.2s ease",
+                        display:"block",
+                      }}
+                    />
+                  </Box>
+
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={()=>setPreviewZoom((value) => Math.max(0.5, value - 0.25))}
+                      sx={{ textTransform:"none", borderColor:"rgba(35,57,113,0.25)", color:"#475569" }}
+                    >
+                      Zoom -
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={()=>setPreviewZoom((value) => Math.min(2, value + 0.25))}
+                      sx={{ textTransform:"none", borderColor:"rgba(35,57,113,0.25)", color:"#475569" }}
+                    >
+                      Zoom +
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={()=>setPreviewZoom(1)}
+                      sx={{ textTransform:"none", borderColor:"rgba(35,57,113,0.25)", color:"#475569" }}
+                    >
+                      Reset
+                    </Button>
+                  </Stack>
 
                   <Paper
                     variant="outlined"
@@ -1304,11 +1364,19 @@
                     <Typography sx={{ ...F, fontWeight:800, color:"#0f172a", lineHeight:1.5, fontSize:"0.95rem", mb:0.8, wordBreak:"break-word" }}>
                       {previewItem.fileName||previewItem.filename||"-"}
                     </Typography>
-                    {getDisplayPrompt(previewItem) && (
-                      <Typography sx={{ ...F, fontWeight:600, color:"#475569", lineHeight:1.7, fontSize:"0.86rem", mb:1 }}>
-                        {getDisplayPrompt(previewItem)}
-                      </Typography>
-                    )}
+                    <Typography sx={{ ...F, color:"#475569", fontSize:"0.82rem", fontWeight:600, mb:1 }}>
+                      By {authorName}
+                    </Typography>
+                    {previewItem.prompt ? (
+                      <Box sx={{ mb:1 }}>
+                        <Typography sx={{ ...F, color:"#0f172a", fontWeight:700, fontSize:"0.78rem", mb:0.4 }}>
+                          Prompt
+                        </Typography>
+                        <Typography sx={{ ...F, color:"#475569", lineHeight:1.7, fontSize:"0.86rem" }}>
+                          {previewItem.prompt}
+                        </Typography>
+                      </Box>
+                    ) : null}
                     <Stack direction="row" spacing={1} alignItems="center">
                       <TuneRoundedIcon sx={{ fontSize:13, color:"#94a3b8" }}/>
                       <Typography sx={{ ...F, color:"#94a3b8", fontSize:"0.75rem" }}>
