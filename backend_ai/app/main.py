@@ -16,9 +16,61 @@ from app.config import (
     MAX_FILE_SIZE_BYTES,
     ALLOWED_IMAGE_TYPES,
     OUTPUT_DIR,
+    GEMINI_API_KEY_ECOMMERCE,
+    GEMINI_API_KEY_PRODUCT,
 )
 from app.gemini_service import edit_image_with_gemini
 from app.auth import verify_token
+
+# ── Department detection ──────────────────────────────────────────────────────
+
+ECOMMERCE_FILENAME_PREFIX = "ec_"
+PRODUCT_FILENAME_PREFIX   = "pd_"
+
+
+def get_dept_category(user: dict) -> str:
+    dept_raw = (
+        user.get("department") or
+        user.get("division") or
+        user.get("department_name") or
+        user.get("departmentName") or
+        ""
+    ).strip().lower()
+
+    if dept_raw in ("it", "information technology", "department it", "departement it", "it department"):
+        return "it"
+    if ("product" in dept_raw
+            and "ecommerce" not in dept_raw
+            and "e-commerce" not in dept_raw
+            and "e commerce" not in dept_raw):
+        return "product"
+    if "ecommerce" in dept_raw or "e-commerce" in dept_raw or "e commerce" in dept_raw:
+        return "ecommerce"
+    return "ecommerce"
+
+
+def get_api_key_for_dept(dept: str) -> str:
+    if dept == "product":
+        return GEMINI_API_KEY_PRODUCT
+    return GEMINI_API_KEY_ECOMMERCE
+
+
+def get_filename_prefix_for_dept(dept: str) -> str:
+    if dept == "product":
+        return PRODUCT_FILENAME_PREFIX
+    return ECOMMERCE_FILENAME_PREFIX
+
+
+def get_file_dept(filename: str) -> str:
+    if filename.startswith(PRODUCT_FILENAME_PREFIX):
+        return "product"
+    return "ecommerce"  # ec_ prefix atau legacy (tanpa prefix) = ecommerce
+
+
+def can_view_file(filename: str, user_dept: str) -> bool:
+    if user_dept == "it":
+        return True
+    return get_file_dept(filename) == user_dept
 
 print("MAIN PY CORS_ORIGINS:", CORS_ORIGINS)
 
@@ -86,10 +138,12 @@ def health():
     return {"status": "ok"}
 
 
-# GET gallery & image — public (preview tetap jalan tanpa auth)
+# GET gallery — butuh JWT, difilter berdasarkan departemen user
 @app.get("/gallery")
 @app.get("/api/gallery")
-def get_gallery():
+async def get_gallery(current_user: dict = Depends(verify_token)):
+    user_dept = get_dept_category(current_user)
+
     if not OUTPUT_DIR.exists():
         return []
 
@@ -100,6 +154,8 @@ def get_gallery():
         if not file_path.is_file():
             continue
         if file_path.suffix.lower() not in allowed_exts:
+            continue
+        if not can_view_file(file_path.name, user_dept):
             continue
         items.append({
             "id":           file_path.name,
@@ -173,12 +229,24 @@ async def edit_image(
             except Exception:
                 continue
 
+    user_dept   = get_dept_category(current_user)
+    dept_api_key = get_api_key_for_dept(user_dept)
+    dept_prefix  = get_filename_prefix_for_dept(user_dept)
+
+    if not dept_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="API key untuk departmen Anda belum dikonfigurasi. Hubungi admin IT.",
+        )
+
     try:
         result = edit_image_with_gemini(
             image_bytes=image_bytes,
             mime_type=mime_type,
             prompt=prompt.strip(),
             reference_images=reference_images if reference_images else None,
+            api_key=dept_api_key,
+            filename_prefix=dept_prefix,
         )
 
         if not result.get("filename"):
@@ -207,6 +275,7 @@ def delete_gallery_item(
     filename: str,
     current_user: dict = Depends(verify_token),
 ):
+    user_dept = get_dept_category(current_user)
     safe_name = Path(filename).name
     file_path = OUTPUT_DIR / safe_name
 
@@ -216,6 +285,9 @@ def delete_gallery_item(
     allowed_exts = {".png", ".jpg", ".jpeg", ".webp"}
     if file_path.suffix.lower() not in allowed_exts:
         raise HTTPException(status_code=400, detail="Tipe file tidak diizinkan")
+
+    if not can_view_file(safe_name, user_dept):
+        raise HTTPException(status_code=403, detail="Tidak punya akses untuk menghapus file ini")
 
     try:
         file_path.unlink()
@@ -228,6 +300,8 @@ def delete_gallery_item(
 @app.delete("/gallery")
 @app.delete("/api/gallery")
 def delete_all_gallery(current_user: dict = Depends(verify_token)):
+    user_dept = get_dept_category(current_user)
+
     if not OUTPUT_DIR.exists():
         return {"success": True, "message": "Gallery sudah kosong", "deleted": 0}
 
@@ -239,6 +313,8 @@ def delete_all_gallery(current_user: dict = Depends(verify_token)):
         if not file_path.is_file():
             continue
         if file_path.suffix.lower() not in allowed_exts:
+            continue
+        if not can_view_file(file_path.name, user_dept):
             continue
         try:
             file_path.unlink()
@@ -258,6 +334,8 @@ async def delete_gallery_bulk(
     request: Request,
     current_user: dict = Depends(verify_token),
 ):
+    user_dept = get_dept_category(current_user)
+
     try:
         body = await request.json()
         ids  = body.get("ids", [])
@@ -279,6 +357,9 @@ async def delete_gallery_bulk(
             continue
         if file_path.suffix.lower() not in allowed_exts:
             errors.append(f"{safe_name}: tipe file tidak diizinkan")
+            continue
+        if not can_view_file(safe_name, user_dept):
+            errors.append(f"{safe_name}: tidak punya akses")
             continue
         try:
             file_path.unlink()

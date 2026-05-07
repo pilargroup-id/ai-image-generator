@@ -5,18 +5,16 @@ from typing import Optional
 from PIL import Image
 from google import genai
 from google.genai import types
-from app.config import GEMINI_API_KEY, OUTPUT_DIR
-
-client = genai.Client(api_key=GEMINI_API_KEY)
+from app.config import GEMINI_API_KEY_ECOMMERCE, OUTPUT_DIR
 
 
-def save_inline_image(data: bytes, mime_type: str) -> str:
+def save_inline_image(data: bytes, mime_type: str, prefix: str = "") -> str:
     ext = ".png"
     if "jpeg" in mime_type or "jpg" in mime_type:
         ext = ".jpg"
     elif "webp" in mime_type:
         ext = ".webp"
-    filename = f"{uuid.uuid4().hex}{ext}"
+    filename = f"{prefix}{uuid.uuid4().hex}{ext}"
     file_path = OUTPUT_DIR / filename
     image = Image.open(io.BytesIO(data))
     if ext == ".jpg":
@@ -25,7 +23,7 @@ def save_inline_image(data: bytes, mime_type: str) -> str:
     return filename
 
 
-def extract_image_filename_from_response(response) -> Optional[str]:
+def extract_image_filename_from_response(response, prefix: str = "") -> Optional[str]:
     candidates = getattr(response, "candidates", None) or []
     if not candidates:
         return None
@@ -38,7 +36,7 @@ def extract_image_filename_from_response(response) -> Optional[str]:
             inline_data = getattr(part, "inline_data", None)
             if inline_data and getattr(inline_data, "data", None):
                 mime_type = getattr(inline_data, "mime_type", "image/png")
-                return save_inline_image(inline_data.data, mime_type)
+                return save_inline_image(inline_data.data, mime_type, prefix)
     return None
 
 
@@ -47,14 +45,20 @@ def edit_image_with_gemini(
     mime_type: str,
     prompt: str,
     reference_images: Optional[list[dict]] = None,
+    api_key: Optional[str] = None,
+    filename_prefix: str = "",
 ) -> dict:
     """
     Edit gambar utama dengan prompt.
     Jika reference_images diberikan, gambar-gambar tersebut
     akan disertakan sebagai konteks visual/style referensi.
 
+    api_key       : key Gemini yang akan dipakai (per-departemen)
+    filename_prefix: prefix nama file output, misal 'ec_' atau 'pd_'
     reference_images format: [{"data": bytes, "mime_type": str}, ...]
     """
+    key = api_key or GEMINI_API_KEY_ECOMMERCE
+    client = genai.Client(api_key=key)
 
     contents = []
 
@@ -104,7 +108,7 @@ def edit_image_with_gemini(
         ),
     )
 
-    filename = extract_image_filename_from_response(response)
+    filename = extract_image_filename_from_response(response, filename_prefix)
 
     text_output = ""
     try:

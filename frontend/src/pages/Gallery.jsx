@@ -1,5 +1,6 @@
   import { useEffect, useMemo, useState } from "react";
   import { useSearchParams } from "react-router-dom";
+  import api from "../api/client";
   import {
     Box, Card, CardContent, Stack, Typography, Chip, Button,
     IconButton, Dialog, DialogContent, DialogTitle, TextField,
@@ -476,14 +477,14 @@
     };
 
     const _doDelete = async (id) => {
-      try { await fetch(`/api/gallery/${encodeURIComponent(id)}`, { method:"DELETE" }); }
+      try { await api.delete(`/gallery/${encodeURIComponent(id)}`); }
       catch (e) { console.error("Delete failed:", e); }
       setGallery(g => g.filter(i => i.id !== id));
       setSelectedIds(s => { const n = new Set(s); n.delete(id); return n; });
     };
 
     const _doClearAll = async () => {
-      try { await fetch("/api/gallery", { method:"DELETE" }); }
+      try { await api.delete("/gallery"); }
       catch (e) { console.error("Clear all failed:", e); }
       setGallery([]);
       setSelectedIds(new Set());
@@ -492,11 +493,7 @@
 
     const _doDeleteSelected = async () => {
       try {
-        await fetch("/api/gallery/bulk", {
-          method:"DELETE",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ ids:[...selectedIds] }),
-        });
+        await api.delete("/gallery/bulk", { data: { ids: [...selectedIds] } });
       } catch (e) { console.error("Bulk delete failed:", e); }
       setGallery(g => g.filter(i => !selectedIds.has(i.id)));
       setSelectedIds(new Set());
@@ -504,10 +501,9 @@
     };
 
     useEffect(() => {
-      fetch("/api/gallery")
-        .then(r=>r.json())
-        .then(d=>setGallery(Array.isArray(d)?d:[]))
-        .catch(()=>setGallery([]));
+      api.get("/gallery")
+        .then(r => setGallery(Array.isArray(r.data) ? r.data : []))
+        .catch(() => setGallery([]));
     }, []);
 
     useEffect(() => {

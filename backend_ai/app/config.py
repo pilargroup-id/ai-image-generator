@@ -12,11 +12,17 @@ load_dotenv(ENV_PATH)
 APP_NAME = os.getenv("APP_NAME", "Gemini Image Editor API")
 APP_ENV = os.getenv("APP_ENV", "development")
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-print("GEMINI_API_KEY kebaca:", bool(GEMINI_API_KEY))
+_legacy_key = os.getenv("GEMINI_API_KEY", "").strip()
+GEMINI_API_KEY_ECOMMERCE = (os.getenv("GEMINI_API_KEY_ECOMMERCE", "") or _legacy_key).strip()
+GEMINI_API_KEY_PRODUCT   = os.getenv("GEMINI_API_KEY_PRODUCT", "").strip()
 
-if not GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY belum di-set di file .env")
+print("GEMINI_API_KEY_ECOMMERCE kebaca:", bool(GEMINI_API_KEY_ECOMMERCE))
+print("GEMINI_API_KEY_PRODUCT   kebaca:", bool(GEMINI_API_KEY_PRODUCT))
+
+if not GEMINI_API_KEY_ECOMMERCE and not GEMINI_API_KEY_PRODUCT:
+    raise RuntimeError(
+        "Setidaknya GEMINI_API_KEY_ECOMMERCE atau GEMINI_API_KEY_PRODUCT harus di-set di file .env"
+    )
 
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "10"))
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
