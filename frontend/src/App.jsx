@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Gallery from "./pages/Gallery"
 import ImageEditorPage from "./pages/ImageEditorPage"
+import UpscalePage from "./pages/UpscalePage"
 import Layout from "./components/Layout"
 import { AuthProvider, useAuth } from "./auth/AuthContext"
 import ProtectedRoute from "./auth/ProtectedRoute"
@@ -32,6 +33,14 @@ function AppRoutes() {
           element={
             <Layout pageTitle="Image Editor" pageSubtitle="Edit gambar dengan AI">
               <ImageEditorPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/upscale"
+          element={
+            <Layout pageTitle="Upscale Image" pageSubtitle="Tingkatkan resolusi gambar dengan AI">
+              <UpscalePage />
             </Layout>
           }
         />

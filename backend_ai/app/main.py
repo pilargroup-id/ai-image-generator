@@ -20,7 +20,7 @@ from app.config import (
     GEMINI_API_KEY_ECOMMERCE,
     GEMINI_API_KEY_PRODUCT,
 )
-from app.gemini_service import edit_image_with_gemini
+from app.gemini_service import edit_image_with_gemini, upscale_image
 from app.auth import verify_token
 
 # ── Department detection ──────────────────────────────────────────────────────
@@ -295,6 +295,74 @@ async def edit_image(
             "height":       result.get("height"),
             "requested_resolution": result.get("requested_resolution"),
             "text_output":  result.get("text_output"),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/image/upscale")
+@app.post("/api/image/upscale")
+async def upscale_image_endpoint(
+    file: UploadFile = File(...),
+    scale: str = Form("2x"),
+    current_user: dict = Depends(verify_token),
+):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="File tidak ditemukan")
+
+    mime_type = (file.content_type or "").lower().strip()
+    if mime_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="Format file harus PNG, JPG, JPEG, atau WEBP")
+
+    image_bytes = await file.read()
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="File gambar kosong")
+    if len(image_bytes) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail=f"Ukuran file maksimal {MAX_FILE_SIZE_BYTES // (1024 * 1024)} MB")
+
+    if scale not in ("2x", "4x"):
+        scale = "2x"
+
+    user_dept    = get_dept_category(current_user)
+    dept_api_key = get_api_key_for_dept(user_dept)
+    dept_prefix  = get_filename_prefix_for_dept(user_dept)
+
+    user_display_name = (
+        current_user.get("name") or
+        current_user.get("full_name") or
+        current_user.get("fullName") or
+        current_user.get("username") or
+        current_user.get("email") or
+        ""
+    ).strip()
+
+    if not dept_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="API key untuk departmen Anda belum dikonfigurasi. Hubungi admin IT.",
+        )
+
+    try:
+        result = upscale_image(
+            image_bytes=image_bytes,
+            mime_type=mime_type,
+            scale=scale,
+            api_key=dept_api_key,
+            filename_prefix=dept_prefix,
+            created_by=user_display_name,
+        )
+        return {
+            "success":      True,
+            "message":      f"Gambar berhasil diupscale {scale}",
+            "filename":     result["filename"],
+            "image_url":    f"/image/{result['filename']}",
+            "api_image_url": f"/api/image/{result['filename']}",
+            "width":        result["width"],
+            "height":       result["height"],
+            "ai_enhanced":  result.get("ai_enhanced", False),
+            "scale":        result.get("scale", scale),
         }
     except HTTPException:
         raise
