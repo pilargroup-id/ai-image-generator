@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import json
 from pathlib import Path
 from datetime import datetime
 
@@ -157,14 +158,28 @@ async def get_gallery(current_user: dict = Depends(verify_token)):
             continue
         if not can_view_file(file_path.name, user_dept):
             continue
+
+        # Baca sidecar metadata jika ada
+        meta_path = OUTPUT_DIR / (file_path.name + ".json")
+        created_by = ""
+        prompt_meta = ""
+        if meta_path.exists():
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                created_by  = meta.get("createdBy", "")
+                prompt_meta = meta.get("prompt", "")
+            except Exception:
+                pass
+
         items.append({
-            "id":           file_path.name,
-            "fileName":     file_path.name,
-            "filename":     file_path.name,
-            "imageUrl":     f"/image/{file_path.name}",
-            "apiImageUrl":  f"/api/image/{file_path.name}",
-            "createdAt":    get_created_at(file_path),
-            "prompt":       file_path.stem,
+            "id":          file_path.name,
+            "fileName":    file_path.name,
+            "filename":    file_path.name,
+            "imageUrl":    f"/image/{file_path.name}",
+            "apiImageUrl": f"/api/image/{file_path.name}",
+            "createdAt":   get_created_at(file_path),
+            "prompt":      prompt_meta or file_path.stem,
+            "createdBy":   created_by,
         })
 
     items.sort(
@@ -233,6 +248,16 @@ async def edit_image(
     dept_api_key = get_api_key_for_dept(user_dept)
     dept_prefix  = get_filename_prefix_for_dept(user_dept)
 
+    # Ambil nama user dari JWT
+    user_display_name = (
+        current_user.get("name") or
+        current_user.get("full_name") or
+        current_user.get("fullName") or
+        current_user.get("username") or
+        current_user.get("email") or
+        ""
+    ).strip()
+
     if not dept_api_key:
         raise HTTPException(
             status_code=503,
@@ -247,6 +272,7 @@ async def edit_image(
             reference_images=reference_images if reference_images else None,
             api_key=dept_api_key,
             filename_prefix=dept_prefix,
+            created_by=user_display_name,
         )
 
         if not result.get("filename"):
@@ -291,6 +317,11 @@ def delete_gallery_item(
 
     try:
         file_path.unlink()
+        # Hapus sidecar jika ada
+        meta_path = OUTPUT_DIR / (safe_name + ".json")
+        if meta_path.exists():
+            try: meta_path.unlink()
+            except Exception: pass
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal menghapus file: {e}")
 
@@ -318,6 +349,11 @@ def delete_all_gallery(current_user: dict = Depends(verify_token)):
             continue
         try:
             file_path.unlink()
+            # Hapus sidecar jika ada
+            meta_path = OUTPUT_DIR / (file_path.name + ".json")
+            if meta_path.exists():
+                try: meta_path.unlink()
+                except Exception: pass
             deleted += 1
         except Exception as e:
             errors.append(f"{file_path.name}: {e}")

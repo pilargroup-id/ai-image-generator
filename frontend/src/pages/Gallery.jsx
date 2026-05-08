@@ -1,4 +1,4 @@
-  import { useEffect, useMemo, useState } from "react";
+  import { useEffect, useMemo, useRef, useState } from "react";
   import { useSearchParams } from "react-router-dom";
   import { useAuth } from "../auth/AuthContext";
   import api from "../api/client";
@@ -418,6 +418,11 @@
     const [gallery,       setGallery]       = useState([]);
     const [previewItem,   setPreviewItem]   = useState(null);
     const [previewZoom,   setPreviewZoom]   = useState(1);
+    const [previewPan,    setPreviewPan]    = useState({ x:0, y:0 });
+    const [isDragging,    setIsDragging]    = useState(false);
+    const dragStartRef   = useRef(null);
+    const panStartRef    = useRef(null);
+    const touchesRef     = useRef([]);
     const [hovered,       setHovered]       = useState(null);
     const [selectMode,    setSelectMode]    = useState(false);
     const [selectedIds,   setSelectedIds]   = useState(new Set());
@@ -450,8 +455,58 @@
 
     const openPreview = (item) => {
       setPreviewZoom(1);
+      setPreviewPan({ x:0, y:0 });
+      setIsDragging(false);
       setPreviewItem(item);
     };
+
+    const resetZoom = () => { setPreviewZoom(1); setPreviewPan({ x:0, y:0 }); };
+
+    /* ── drag handlers (mouse) ── */
+    const onMouseDown = (e) => {
+      if (previewZoom <= 1) return;
+      e.preventDefault();
+      setIsDragging(true);
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      panStartRef.current  = { x: previewPan.x, y: previewPan.y };
+    };
+    const onMouseMove = (e) => {
+      if (!isDragging || !dragStartRef.current) return;
+      setPreviewPan({
+        x: panStartRef.current.x + (e.clientX - dragStartRef.current.x),
+        y: panStartRef.current.y + (e.clientY - dragStartRef.current.y),
+      });
+    };
+    const onMouseUp = () => { setIsDragging(false); };
+
+    /* ── pinch + pan handlers (touch) ── */
+    const onTouchStart = (e) => {
+      touchesRef.current = Array.from(e.touches);
+      if (e.touches.length === 1) {
+        dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        panStartRef.current  = { x: previewPan.x, y: previewPan.y };
+      }
+    };
+    const onTouchMove = (e) => {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        const t0 = e.touches[0], t1 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        const prev = touchesRef.current;
+        if (prev.length === 2) {
+          const prevDist = Math.hypot(prev[1].clientX - prev[0].clientX, prev[1].clientY - prev[0].clientY);
+          const scale = dist / prevDist;
+          setPreviewZoom(v => parseFloat(Math.min(5, Math.max(0.25, v * scale)).toFixed(2)));
+        }
+        touchesRef.current = Array.from(e.touches);
+      } else if (e.touches.length === 1 && dragStartRef.current && previewZoom > 1) {
+        setPreviewPan({
+          x: panStartRef.current.x + (e.touches[0].clientX - dragStartRef.current.x),
+          y: panStartRef.current.y + (e.touches[0].clientY - dragStartRef.current.y),
+        });
+      }
+    };
+    const onTouchEnd = () => { touchesRef.current = []; dragStartRef.current = null; };
 
     const handleSearchChange = (value) => {
       updateGallerySearchParams({
@@ -1063,9 +1118,11 @@
                           {item.fileName||item.filename||"-"}
                         </Typography>
 
-                        <Typography sx={{ ...F, color:"#475569", fontSize:"0.70rem", fontWeight:600, mb:"8px" }}>
-                          By {item.createdBy || item.username || item.user || authorName}
-                        </Typography>
+                        {(item.createdBy || item.username || item.user) && (
+                          <Typography sx={{ ...F, color:"#475569", fontSize:"0.70rem", fontWeight:600, mb:"8px" }}>
+                            By {item.createdBy || item.username || item.user}
+                          </Typography>
+                        )}
 
                         <Box sx={{ flexShrink:0, mb:"8px", minHeight:`calc(0.73rem * 1.5 * ${PROMPT_LINES})` }}>
                           {displayPrompt ? (
@@ -1295,30 +1352,35 @@
                 <Stack spacing={2.4}>
                   {/* Zoom controls */}
                   <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-                    <Typography sx={{ ...F, fontSize:"0.75rem", color:"#94a3b8", fontWeight:600 }}>
-                      Zoom: {Math.round(previewZoom * 100)}%
-                    </Typography>
-                    <Stack direction="row" spacing={0.8}>
+                    <Stack direction="row" spacing={0.8} alignItems="center">
+                      <Typography sx={{ ...F, fontSize:"0.72rem", color:"#94a3b8", fontWeight:600 }}>
+                        🖱️ Scroll = zoom · Drag = geser · Pinch = zoom mobile
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={0.8} alignItems="center">
+                      <Typography sx={{ ...F, fontSize:"0.75rem", color:"#233971", fontWeight:700 }}>
+                        {Math.round(previewZoom * 100)}%
+                      </Typography>
                       <Button
                         size="small"
                         variant="outlined"
                         onClick={()=>setPreviewZoom((v) => Math.max(0.25, parseFloat((v - 0.25).toFixed(2))))}
                         sx={{
                           ...F, textTransform:"none", fontWeight:700, fontSize:"0.78rem",
-                          borderRadius:"10px", minWidth:60,
+                          borderRadius:"10px", minWidth:40, px:1,
                           borderColor:"rgba(35,57,113,0.25)", color:"#233971",
                           "&:hover":{ background:"rgba(35,57,113,0.07)", borderColor:"rgba(35,57,113,0.4)" },
                         }}
                       >
-                        − Zoom
+                        −
                       </Button>
                       <Button
                         size="small"
                         variant="outlined"
-                        onClick={()=>setPreviewZoom(1)}
+                        onClick={resetZoom}
                         sx={{
-                          ...F, textTransform:"none", fontWeight:700, fontSize:"0.78rem",
-                          borderRadius:"10px", minWidth:54,
+                          ...F, textTransform:"none", fontWeight:700, fontSize:"0.72rem",
+                          borderRadius:"10px", minWidth:48, px:1,
                           borderColor:"rgba(35,57,113,0.25)", color:"#64748b",
                           "&:hover":{ background:"rgba(35,57,113,0.06)" },
                         }}
@@ -1328,36 +1390,48 @@
                       <Button
                         size="small"
                         variant="outlined"
-                        onClick={()=>setPreviewZoom((v) => Math.min(4, parseFloat((v + 0.25).toFixed(2))))}
+                        onClick={()=>setPreviewZoom((v) => Math.min(5, parseFloat((v + 0.25).toFixed(2))))}
                         sx={{
                           ...F, textTransform:"none", fontWeight:700, fontSize:"0.78rem",
-                          borderRadius:"10px", minWidth:60,
+                          borderRadius:"10px", minWidth:40, px:1,
                           borderColor:"rgba(35,57,113,0.25)", color:"#233971",
                           "&:hover":{ background:"rgba(35,57,113,0.07)", borderColor:"rgba(35,57,113,0.4)" },
                         }}
                       >
-                        Zoom +
+                        +
                       </Button>
                     </Stack>
                   </Stack>
 
-                  {/* Image container — scrollable so zoom actually works */}
+                  {/* Image container — scroll zoom + drag pan + pinch zoom */}
                   <Box
+                    onWheel={(e) => {
+                      e.preventDefault();
+                      const delta = e.deltaY > 0 ? -0.15 : 0.15;
+                      setPreviewZoom((v) => parseFloat(Math.min(5, Math.max(0.25, v + delta)).toFixed(2)));
+                    }}
+                    onMouseDown={onMouseDown}
+                    onMouseMove={onMouseMove}
+                    onMouseUp={onMouseUp}
+                    onMouseLeave={onMouseUp}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                     sx={{
                       width:"100%",
-                      height: previewZoom <= 1 ? "auto" : `${Math.round(420 * previewZoom)}px`,
-                      minHeight:220,
-                      maxHeight: previewZoom <= 1 ? "62vh" : "unset",
-                      overflow:"auto",
+                      height:"62vh",
+                      minHeight:260,
+                      overflow:"hidden",
                       borderRadius:"20px",
                       background:"linear-gradient(135deg,rgba(232,237,248,0.9),rgba(234,240,251,0.9))",
                       border:"1px solid rgba(35,57,113,0.18)",
                       animation:"fadeR 0.4s ease",
                       display:"flex",
                       justifyContent:"center",
-                      alignItems: previewZoom <= 1 ? "center" : "flex-start",
-                      p:1.5,
-                      boxSizing:"border-box",
+                      alignItems:"center",
+                      cursor: isDragging ? "grabbing" : previewZoom > 1 ? "grab" : "zoom-in",
+                      userSelect:"none",
+                      touchAction:"none",
                     }}
                   >
                     <Box
@@ -1366,13 +1440,17 @@
                       alt={previewItem.prompt||"Preview"}
                       sx={{
                         display:"block",
-                        width: previewZoom <= 1 ? "auto" : `${Math.round(100 * previewZoom)}%`,
-                        maxWidth: previewZoom <= 1 ? "100%" : "unset",
-                        height: previewZoom <= 1 ? "auto" : "auto",
-                        maxHeight: previewZoom <= 1 ? "58vh" : "unset",
+                        maxWidth:"100%",
+                        maxHeight:"100%",
                         objectFit:"contain",
-                        transition:"width 0.2s ease, max-width 0.2s ease",
-                        borderRadius:"12px",
+                        transform:`translate(${previewPan.x}px,${previewPan.y}px) scale(${previewZoom})`,
+                        transformOrigin:"center center",
+                        transition: isDragging ? "none" : "transform 0.15s ease",
+                        borderRadius:"8px",
+                        pointerEvents:"none",
+                        userSelect:"none",
+                        WebkitUserDrag:"none",
+                        draggable:false,
                       }}
                     />
                   </Box>
@@ -1388,9 +1466,11 @@
                     <Typography sx={{ ...F, fontWeight:800, color:"#0f172a", lineHeight:1.5, fontSize:"0.95rem", mb:0.8, wordBreak:"break-word" }}>
                       {previewItem.fileName||previewItem.filename||"-"}
                     </Typography>
-                    <Typography sx={{ ...F, color:"#475569", fontSize:"0.82rem", fontWeight:600, mb:1.2 }}>
-                      By {previewItem.createdBy || previewItem.username || previewItem.user || authorName}
-                    </Typography>
+                    {(previewItem.createdBy || previewItem.username || previewItem.user) && (
+                      <Typography sx={{ ...F, color:"#475569", fontSize:"0.82rem", fontWeight:600, mb:1.2 }}>
+                        By {previewItem.createdBy || previewItem.username || previewItem.user}
+                      </Typography>
+                    )}
                     {previewItem.prompt ? (
                       <Box
                         sx={{

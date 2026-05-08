@@ -1,3 +1,4 @@
+import json
 import io
 import uuid
 from pathlib import Path
@@ -8,7 +9,13 @@ from google.genai import types
 from app.config import GEMINI_API_KEY_ECOMMERCE, OUTPUT_DIR
 
 
-def save_inline_image(data: bytes, mime_type: str, prefix: str = "") -> str:
+def save_inline_image(
+    data: bytes,
+    mime_type: str,
+    prefix: str = "",
+    created_by: str = "",
+    prompt: str = "",
+) -> str:
     ext = ".png"
     if "jpeg" in mime_type or "jpg" in mime_type:
         ext = ".jpg"
@@ -20,10 +27,27 @@ def save_inline_image(data: bytes, mime_type: str, prefix: str = "") -> str:
     if ext == ".jpg":
         image = image.convert("RGB")
     image.save(file_path)
+
+    # Simpan metadata sidecar
+    meta_path = OUTPUT_DIR / (filename + ".json")
+    meta = {
+        "createdBy": created_by,
+        "prompt":    prompt,
+    }
+    try:
+        meta_path.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
+
     return filename
 
 
-def extract_image_filename_from_response(response, prefix: str = "") -> Optional[str]:
+def extract_image_filename_from_response(
+    response,
+    prefix: str = "",
+    created_by: str = "",
+    prompt: str = "",
+) -> Optional[str]:
     candidates = getattr(response, "candidates", None) or []
     if not candidates:
         return None
@@ -36,7 +60,10 @@ def extract_image_filename_from_response(response, prefix: str = "") -> Optional
             inline_data = getattr(part, "inline_data", None)
             if inline_data and getattr(inline_data, "data", None):
                 mime_type = getattr(inline_data, "mime_type", "image/png")
-                return save_inline_image(inline_data.data, mime_type, prefix)
+                return save_inline_image(
+                    inline_data.data, mime_type, prefix,
+                    created_by=created_by, prompt=prompt,
+                )
     return None
 
 
@@ -47,6 +74,7 @@ def edit_image_with_gemini(
     reference_images: Optional[list[dict]] = None,
     api_key: Optional[str] = None,
     filename_prefix: str = "",
+    created_by: str = "",
 ) -> dict:
     """
     Edit gambar utama dengan prompt.
@@ -108,7 +136,10 @@ def edit_image_with_gemini(
         ),
     )
 
-    filename = extract_image_filename_from_response(response, filename_prefix)
+    filename = extract_image_filename_from_response(
+        response, filename_prefix,
+        created_by=created_by, prompt=prompt.strip(),
+    )
 
     text_output = ""
     try:
