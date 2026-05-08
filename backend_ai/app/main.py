@@ -354,6 +354,7 @@ async def upscale_image_endpoint(
             "width":        result["width"],
             "height":       result["height"],
             "scale":        result.get("scale", scale),
+            "method":       result.get("method", "lanczos"),
         }
     except HTTPException:
         raise

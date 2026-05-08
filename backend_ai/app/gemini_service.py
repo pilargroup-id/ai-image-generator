@@ -1,6 +1,8 @@
 import io
 import json
+import urllib.request
 import uuid
+from pathlib import Path
 from typing import Optional
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
@@ -11,6 +13,78 @@ from app.config import GEMINI_API_KEY_ECOMMERCE, OUTPUT_DIR
 
 
 RESAMPLING_LANCZOS = getattr(Image, "Resampling", Image).LANCZOS
+
+# ── OpenCV DNN Super-Resolution setup ────────────────────────────────────────
+try:
+    import cv2
+    import numpy as np
+    _CV2_SR_AVAILABLE = hasattr(cv2, "dnn_superres")
+except ImportError:
+    cv2 = None          # type: ignore
+    np = None           # type: ignore
+    _CV2_SR_AVAILABLE = False
+
+_MODELS_DIR = Path(__file__).parent / "sr_models"
+
+# EDSR — best quality among OpenCV DNN SR models, ~2.3 MB each
+_SR_MODELS: dict[int, dict] = {
+    2: {
+        "algo": "edsr",
+        "file": "EDSR_x2.pb",
+        "url":  "https://github.com/Saafke/EDSR_Tensorflow/raw/master/models/EDSR_x2.pb",
+    },
+    4: {
+        "algo": "edsr",
+        "file": "EDSR_x4.pb",
+        "url":  "https://github.com/Saafke/EDSR_Tensorflow/raw/master/models/EDSR_x4.pb",
+    },
+}
+
+_sr_cache: dict[int, object] = {}   # loaded models cached in memory
+
+
+def _get_sr_model(scale: int):
+    """Return a loaded DnnSuperResImpl or None if unavailable."""
+    if not _CV2_SR_AVAILABLE:
+        return None
+    if scale in _sr_cache:
+        return _sr_cache[scale]
+
+    info = _SR_MODELS.get(scale)
+    if not info:
+        return None
+
+    model_path = _MODELS_DIR / info["file"]
+    if not model_path.exists():
+        _MODELS_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            urllib.request.urlretrieve(info["url"], model_path)
+        except Exception:
+            return None
+
+    try:
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        sr.readModel(str(model_path))
+        sr.setModel(info["algo"], scale)
+        _sr_cache[scale] = sr
+        return sr
+    except Exception:
+        return None
+
+
+def _cv2_upscale(pil_img: Image.Image, scale: int) -> Optional[Image.Image]:
+    """Upscale using EDSR neural network. Returns None on any failure."""
+    sr = _get_sr_model(scale)
+    if sr is None:
+        return None
+    try:
+        arr = np.array(pil_img.convert("RGB"))
+        bgr = arr[:, :, ::-1].copy()
+        result_bgr = sr.upsample(bgr)
+        result_rgb = result_bgr[:, :, ::-1]
+        return Image.fromarray(result_rgb, "RGB")
+    except Exception:
+        return None
 SUPPORTED_RESOLUTIONS = {
     "1920x1080": (1920, 1080),
     "2560x1440": (2560, 1440),
@@ -214,28 +288,41 @@ def upscale_image(
         ext = ".webp"
         output_format = "WEBP"
 
-    img = Image.open(io.BytesIO(image_bytes))
-    img.load()
-    img = img.convert("RGBA") if output_format == "PNG" else img.convert("RGB")
-
     scale_factor = 4 if scale == "4x" else 2
-    new_w = img.width * scale_factor
-    new_h = img.height * scale_factor
-    max_dim = 3840
-    if new_w > max_dim or new_h > max_dim:
-        ratio = min(max_dim / new_w, max_dim / new_h)
-        new_w = round(new_w * ratio)
-        new_h = round(new_h * ratio)
 
-    # Multi-step upscaling for 4x
-    if scale_factor >= 4:
-        mid_w = min(img.width * 2, new_w)
-        mid_h = min(img.height * 2, new_h)
-        img = img.resize((mid_w, mid_h), RESAMPLING_LANCZOS)
+    src = Image.open(io.BytesIO(image_bytes))
+    src.load()
+
+    # ── Try EDSR neural-network super-resolution ──────────────────────────────
+    # For 4x, run two 2x passes (2x → 2x) — better quality than one 4x pass.
+    ai_result: Optional[Image.Image] = None
+    if scale_factor == 4:
+        step = _cv2_upscale(src.convert("RGB"), 2)
+        if step is not None:
+            ai_result = _cv2_upscale(step, 2)
+    else:
+        ai_result = _cv2_upscale(src.convert("RGB"), 2)
+
+    if ai_result is not None:
+        img = ai_result.convert("RGBA") if output_format == "PNG" else ai_result.convert("RGB")
+        # Light sharpening pass after neural upscale
         img = _sharpen_after_upscale(img, strong=False)
-
-    img = img.resize((new_w, new_h), RESAMPLING_LANCZOS)
-    img = _sharpen_after_upscale(img, strong=True)
+        method = "edsr"
+    else:
+        # ── Fallback: multi-step Lanczos ──────────────────────────────────────
+        img = src.convert("RGBA") if output_format == "PNG" else src.convert("RGB")
+        new_w = img.width * scale_factor
+        new_h = img.height * scale_factor
+        max_dim = 3840
+        if new_w > max_dim or new_h > max_dim:
+            ratio = min(max_dim / new_w, max_dim / new_h)
+            new_w, new_h = round(new_w * ratio), round(new_h * ratio)
+        if scale_factor >= 4:
+            img = img.resize((img.width * 2, img.height * 2), RESAMPLING_LANCZOS)
+            img = _sharpen_after_upscale(img, strong=False)
+        img = img.resize((new_w, new_h), RESAMPLING_LANCZOS)
+        img = _sharpen_after_upscale(img, strong=True)
+        method = "lanczos"
 
     filename = f"{filename_prefix}upscale_{uuid.uuid4().hex}{ext}"
     file_path = OUTPUT_DIR / filename
@@ -257,6 +344,7 @@ def upscale_image(
                 "createdBy": created_by,
                 "prompt": f"Upscale {scale}",
                 "scale": scale,
+                "method": method,
                 "width": img.width,
                 "height": img.height,
             }, ensure_ascii=False),
@@ -270,6 +358,7 @@ def upscale_image(
         "width": img.width,
         "height": img.height,
         "scale": scale,
+        "method": method,
     }
 
 

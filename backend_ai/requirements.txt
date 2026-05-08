@@ -4,3 +4,5 @@ python-multipart
 python-dotenv
 pillow
 google-genai
+opencv-contrib-python-headless
+numpy

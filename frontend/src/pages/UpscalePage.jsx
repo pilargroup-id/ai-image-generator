@@ -190,6 +190,7 @@ export default function UpscalePage() {
         width: data.width,
         height: data.height,
         scale: data.scale || scale,
+        method: data.method || "lanczos",
       });
 
       // Save to gallery
@@ -510,6 +511,9 @@ export default function UpscalePage() {
                     <Typography sx={{ ...F, fontWeight: 700, fontSize: "0.83rem", color: "#1e293b" }}>After</Typography>
                     <Stack direction="row" spacing={0.8} alignItems="center">
                       <DimBadge w={resultMeta?.width} h={resultMeta?.height} label={`Upscale ${resultMeta?.scale || scale}`} color="#2a4a9e" />
+                      {resultMeta?.method === "edsr" && (
+                        <Chip size="small" label="EDSR Neural" sx={{ ...F, fontWeight: 700, fontSize: "0.68rem", borderRadius: "999px", background: "linear-gradient(135deg,#233971,#2e4fa3)", color: "#fff", height: 22, border: "none" }} />
+                      )}
 <Chip size="small" label={loading ? "Processing…" : resultUrl ? "Done ✓" : "Waiting"} sx={{ ...F, fontWeight: 600, fontSize: "0.72rem", borderRadius: "999px", background: loading ? "rgba(245,158,11,0.09)" : resultUrl ? "rgba(35,57,113,0.09)" : "rgba(148,163,184,0.09)", color: loading ? "#f59e0b" : resultUrl ? "#233971" : "#94a3b8", border: `1px solid ${loading ? "rgba(245,158,11,0.25)" : resultUrl ? "rgba(35,57,113,0.25)" : "rgba(148,163,184,0.22)"}` }} />
                     </Stack>
                   </Stack>
