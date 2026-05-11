@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
+load_dotenv(".env.local", override=True)
 load_dotenv()
-
+import os
 import json
 from pathlib import Path
 from datetime import datetime
@@ -88,6 +89,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if os.getenv("APP_ENV", "production") == "local":
+    from app.dev_auth import router as dev_router
+    app.include_router(dev_router, prefix="/api")
 
 
 @app.middleware("http")
