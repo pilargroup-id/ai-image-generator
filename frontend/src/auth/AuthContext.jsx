@@ -50,7 +50,13 @@ export function AuthProvider({ children }) {
 
         const apps = payload.apps || [];
         if (!apps.includes(APP_KEY)) {
-          throw new Error("Tidak punya akses Framelens");
+          // Punya token valid tapi gak punya akses FL
+          // Jangan redirect ke login (loop), langsung ke dashboard PG
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          setLoading(false);
+          window.location.href = `${PILARGROUP_URL}/dashboard`;
+          return;
         }
 
         const userData = {
