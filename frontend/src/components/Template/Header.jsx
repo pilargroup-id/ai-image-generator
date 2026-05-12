@@ -70,7 +70,7 @@ function renderBreadcrumbItem(item, index) {
 }
 
 function Header({
-  title = 'Framelenss',
+  title = 'Framelens',
   subtitle = '',
   breadcrumb = [],
   breadcrumbContent = null,
