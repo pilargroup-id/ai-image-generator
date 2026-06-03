@@ -343,7 +343,7 @@ function Sidebar({
         {!collapsed && (
           <div className="sidebar-footer-brand">
             <span>© 2026 PT Pilar Niaga Makmur</span>
-            <span>IT Team</span>
+            <span>Developed by IT Team</span>
           </div>
         )}
       </div>

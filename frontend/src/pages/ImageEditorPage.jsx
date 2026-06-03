@@ -1470,32 +1470,33 @@ export default function ImageEditorPage() {
               display:"flex", alignItems:{ xs:"flex-start", sm:"center" }, flexDirection:{ xs:"column", sm:"row" }, gap:1.5,
               px:2.5, py:1.6,
               borderRadius:"16px",
-              background:"linear-gradient(135deg,#233971 0%,#2e4fa3 60%,#3d5fc0 100%)",
-              border:"none",
-              boxShadow:"0 8px 28px rgba(35,57,113,0.30),inset 0 1px 0 rgba(255,255,255,0.15)",
+              background:"#fff",
+              border:"1px solid rgba(35,57,113,0.18)",
+              boxShadow:"0 2px 8px rgba(0,0,0,0.05), 0 8px 24px -4px rgba(35,57,113,0.10)",
               animation:"slideUp 0.3s ease",
             }}
           >
             <Stack direction="row" spacing={1.2} alignItems="center" sx={{ flex:1, minWidth:0 }}>
-              <Box sx={{ width:36, height:36, borderRadius:"11px", flexShrink:0, background:"rgba(255,255,255,0.18)", display:"flex", alignItems:"center", justifyContent:"center", border:"1px solid rgba(255,255,255,0.28)" }}>
-                <PhotoLibraryRoundedIcon sx={{ fontSize:18, color:"#fff" }}/>
+              <Box sx={{ width:36, height:36, borderRadius:"11px", flexShrink:0, background:"rgba(35,57,113,0.08)", display:"flex", alignItems:"center", justifyContent:"center", border:"1px solid rgba(35,57,113,0.15)" }}>
+                <PhotoLibraryRoundedIcon sx={{ fontSize:18, color:"#233971" }}/>
               </Box>
               <Box sx={{ minWidth:0 }}>
-                <Typography sx={{ ...F, fontSize:"0.83rem", fontWeight:700, color:"#fff", lineHeight:1.3 }}>
+                <Typography sx={{ ...F, fontSize:"0.83rem", fontWeight:700, color:"#0f172a", lineHeight:1.3 }}>
                   Gambar &amp; prompt dari Gallery sudah dimuat
                 </Typography>
                 {fromGalleryInitName && (
-                  <Typography sx={{ ...F, fontSize:"0.71rem", color:"rgba(255,255,255,0.72)", mt:"2px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:360 }}>
+                  <Typography sx={{ ...F, fontSize:"0.71rem", color:"#64748b", mt:"2px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:360 }}>
                     {fromGalleryInitName}
                   </Typography>
                 )}
-                <Typography sx={{ ...F, fontSize:"0.71rem", color:"rgba(255,255,255,0.60)", mt:"1px" }}>
+                <Typography sx={{ ...F, fontSize:"0.71rem", color:"#94a3b8", mt:"1px" }}>
                   Ubah prompt lalu klik Generate untuk buat versi baru.
                 </Typography>
               </Box>
             </Stack>
             <Button
               size="small"
+              variant="outlined"
               startIcon={<ArrowBackRoundedIcon sx={{ fontSize:"16px !important" }}/>}
               onClick={()=>navigate("/")}
               sx={{
@@ -1503,11 +1504,10 @@ export default function ImageEditorPage() {
                 textTransform:"none", fontWeight:700, fontSize:"0.80rem",
                 borderRadius:"12px",
                 color:"#233971",
-                border:"none",
-                background:"#fff",
+                borderColor:"rgba(35,57,113,0.3)",
+                background:"transparent",
                 px:2, py:0.7, flexShrink:0,
-                boxShadow:"0 4px 12px rgba(0,0,0,0.15)",
-                "&:hover":{ background:"rgba(255,255,255,0.88)", boxShadow:"0 6px 16px rgba(0,0,0,0.18)" },
+                "&:hover":{ background:"rgba(35,57,113,0.05)", borderColor:"rgba(35,57,113,0.5)" },
               }}
             >
               Kembali ke Gallery
