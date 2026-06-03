@@ -1,0 +1,82 @@
+name: Deploy framelens
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Windows Server
+    runs-on: self-hosted
+
+    steps:
+      # -------------------------
+      # 1. Checkout
+      # -------------------------
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # 2. Install npm dependencies
+      # -------------------------
+      - name: Install npm dependencies
+        working-directory: frontend
+        shell: cmd
+        run: C:\nvm4w\nodejs\npm.cmd install
+
+      # -------------------------
+      # 3. Build frontend (output langsung ke backend_ai/frontend_dist via vite config)
+      # -------------------------
+      - name: Build frontend
+        working-directory: frontend
+        shell: cmd
+        run: C:\nvm4w\nodejs\npm.cmd run build
+
+      # -------------------------
+      # 4. Stop service
+      # -------------------------
+      - name: Stop FrameLens service
+        shell: powershell
+        run: |
+          Write-Host ">> Stopping FrameLens service..."
+          Stop-Service -Name "FrameLens" -Force -ErrorAction SilentlyContinue
+          Start-Sleep -Seconds 3
+          Write-Host ">> Service stopped"
+
+      # -------------------------
+      # 5. Copy backend files
+      # -------------------------
+      - name: Copy backend files
+        shell: powershell
+        run: |
+          Write-Host ">> Source path: $env:GITHUB_WORKSPACE\backend_ai"
+          Write-Host ">> Listing source..."
+          Get-ChildItem "$env:GITHUB_WORKSPACE\backend_ai" | Select-Object Name
+          Write-Host ">> Copying backend_ai..."
+          Copy-Item -Path "$env:GITHUB_WORKSPACE\backend_ai\*" `
+            -Destination "C:\ai-image-generator\backend_ai" `
+            -Recurse -Force -Exclude "outputs","venv","__pycache__" `
+            -ErrorAction Stop
+          Write-Host ">> Done"
+
+      # -------------------------
+      # 6. Install Python dependencies
+      # -------------------------
+      - name: Install Python dependencies
+        shell: powershell
+        run: |
+          Write-Host ">> Installing Python deps..."
+          C:\laragon\bin\python\python-3.10\python.exe -m pip install `
+            -r C:\ai-image-generator\backend_ai\requirements.txt --quiet
+          Write-Host ">> Done"
+
+      # -------------------------
+      # 7. Start service
+      # -------------------------
+      - name: Start FrameLens service
+        shell: powershell
+        run: |
+          Write-Host ">> Starting FrameLens service..."
+          Start-Service -Name "FrameLens"
+          Write-Host ">> Deploy selesai"
