@@ -1,5 +1,5 @@
   import { useEffect, useMemo, useRef, useState } from "react";
-  import { useSearchParams } from "react-router-dom";
+  import { useSearchParams, useNavigate } from "react-router-dom";
   import { useAuth } from "../auth/AuthContext";
   import api from "../api/client";
   import {
@@ -40,6 +40,7 @@
   import CropOriginalIcon               from "@mui/icons-material/CropOriginal";
   import BlurOnIcon                     from "@mui/icons-material/BlurOn";
   import GradientIcon                   from "@mui/icons-material/Gradient";
+  import EditRoundedIcon                from "@mui/icons-material/EditRounded";
   import {
     GALLERY_DATE_FROM_PARAM_KEY,
     GALLERY_DATE_TO_PARAM_KEY,
@@ -450,6 +451,7 @@ function DatePickerBox({ label, value, onChange }) {
 
   export default function Gallery() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [gallery,       setGallery]       = useState([]);
     const [previewItem,   setPreviewItem]   = useState(null);
     const [previewZoom,   setPreviewZoom]   = useState(1);
@@ -633,6 +635,10 @@ function DatePickerBox({ label, value, onChange }) {
     };
 
     const handleScrollTop = () => window.scrollTo({ top:0, behavior:"smooth" });
+
+    const handleEditInEditor = (item) => {
+      navigate("/image-editor", { state: { fromGalleryUrl: item.imageUrl, fromGalleryName: item.fileName || item.filename || "gallery-image.png" } });
+    };
 
     const handleDownload = async (url, name="generated-image.png") => {
       try {
@@ -1221,6 +1227,21 @@ function DatePickerBox({ label, value, onChange }) {
                               <Button
                                 size="small"
                                 variant="outlined"
+                                startIcon={<EditRoundedIcon sx={{ fontSize:"14px !important" }}/>}
+                                onClick={()=>handleEditInEditor(item)}
+                                sx={{
+                                  ...pill({ fontSize:"11px", py:0.65, flex:1, minWidth:0 }),
+                                  borderColor:"rgba(35,57,113,0.30)",
+                                  color:"#233971",
+                                  "&:hover":{ borderColor:"rgba(35,57,113,0.55)", background:"rgba(35,57,113,0.06)" },
+                                }}
+                              >
+                                Edit
+                              </Button>
+
+                              <Button
+                                size="small"
+                                variant="outlined"
                                 startIcon={<DownloadRoundedIcon sx={{ fontSize:"14px !important" }}/>}
                                 onClick={()=>handleDownload(item.imageUrl, item.fileName||`generated-${item.id}.png`)}
                                 sx={{
@@ -1554,7 +1575,19 @@ function DatePickerBox({ label, value, onChange }) {
                     </Stack>
                   </Paper>
 
-                  <Stack direction="row" spacing={1.5}>
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+                    <Button
+                      variant="contained"
+                      startIcon={<EditRoundedIcon/>}
+                      onClick={()=>{ setPreviewItem(null); handleEditInEditor(previewItem); }}
+                      sx={{
+                        borderRadius:"999px", textTransform:"none", fontWeight:700, ...F,
+                        background:"linear-gradient(135deg,#233971,#2e4fa3)", boxShadow:"none",
+                        "&:hover":{ background:"linear-gradient(135deg,#1a2d5a,#233971)", boxShadow:"0 8px 20px rgba(35,57,113,0.28)" },
+                      }}
+                    >
+                      Edit di Editor
+                    </Button>
                     <Button
                       variant="contained"
                       startIcon={<DownloadRoundedIcon/>}

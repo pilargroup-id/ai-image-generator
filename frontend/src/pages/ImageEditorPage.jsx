@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -40,6 +41,8 @@ import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
 import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 // ── NEW: reference icon
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import PhotoLibraryRoundedIcon from "@mui/icons-material/PhotoLibraryRounded";
 import api from "../api/client";
 
 /* ─── Google Fonts ─── */
@@ -53,6 +56,7 @@ const FontStyle = () => (
     @keyframes orbDrift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(16px,18px) scale(1.05)} }
     @keyframes gridPulse { 0%,100%{opacity:0.45} 50%{opacity:0.7} }
     @keyframes fadeR { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   `}</style>
 );
 
@@ -953,6 +957,10 @@ export default function ImageEditorPage() {
   // ── NEW: ref image input
   const refFileInputRef = useRef(null);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [fromGallery, setFromGallery] = useState(Boolean(location.state?.fromGalleryUrl));
+
   const [files, setFiles] = useState([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1003,6 +1011,24 @@ export default function ImageEditorPage() {
   useEffect(() => {
     return () => refPreviewUrls.forEach((i) => URL.revokeObjectURL(i.url));
   }, [refPreviewUrls]);
+
+  // Auto-load image when navigated from Gallery
+  useEffect(() => {
+    const { fromGalleryUrl, fromGalleryName } = location.state || {};
+    if (!fromGalleryUrl) return;
+    // Clear the navigation state so refresh doesn't re-load
+    navigate(location.pathname, { replace: true, state: {} });
+    fetch(fromGalleryUrl)
+      .then((r) => r.blob())
+      .then((blob) => {
+        const name = fromGalleryName || "gallery-image.png";
+        const ext  = name.split(".").pop() || "png";
+        const mime = blob.type || `image/${ext}`;
+        const file = new File([blob], name, { type: mime });
+        setFiles([file]);
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const primaryPreviewUrl = previewUrls[0]?.url || "";
   const isSingleSourceMode = files.length <= 1;
@@ -1422,6 +1448,43 @@ export default function ImageEditorPage() {
         />
 
       <Stack spacing={4}>
+
+        {/* ── Back to Gallery banner (shown when user came from Gallery) ── */}
+        {fromGallery && (
+          <Box
+            sx={{
+              display:"flex", alignItems:"center", gap:1.5,
+              px:2.5, py:1.4,
+              borderRadius:"16px",
+              background:"linear-gradient(135deg,rgba(35,57,113,0.08),rgba(46,79,163,0.06))",
+              border:"1.5px solid rgba(35,57,113,0.18)",
+              animation:"slideUp 0.3s ease",
+            }}
+          >
+            <PhotoLibraryRoundedIcon sx={{ fontSize:18, color:"#233971", flexShrink:0 }}/>
+            <Typography sx={{ ...F, fontSize:"0.83rem", fontWeight:600, color:"#233971", flex:1 }}>
+              Gambar dari Gallery sudah dimuat — silakan edit lalu generate.
+            </Typography>
+            <Button
+              size="small"
+              startIcon={<ArrowBackRoundedIcon sx={{ fontSize:"16px !important" }}/>}
+              onClick={()=>navigate("/")}
+              sx={{
+                fontFamily:"'Sora',sans-serif",
+                textTransform:"none", fontWeight:700, fontSize:"0.80rem",
+                borderRadius:"12px",
+                color:"#233971",
+                border:"1.5px solid rgba(35,57,113,0.28)",
+                background:"rgba(255,255,255,0.85)",
+                px:2, py:0.7, flexShrink:0,
+                "&:hover":{ background:"#fff", borderColor:"rgba(35,57,113,0.5)" },
+              }}
+            >
+              Kembali ke Gallery
+            </Button>
+          </Box>
+        )}
+
         <Stack direction={{ xs: "column", lg: "row" }} spacing={3} alignItems="stretch">
           <Card elevation={0} sx={{ ...cardShell, flex: 1.05 }}>
             <CardBg variant="left" />
