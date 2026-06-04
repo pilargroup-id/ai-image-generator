@@ -26,7 +26,8 @@ jobs:
         run: C:\nvm4w\nodejs\npm.cmd install
 
       # -------------------------
-      # 3. Build frontend (output langsung ke backend_ai/frontend_dist via vite config)
+      # 3. Build frontend
+      # output langsung ke backend_ai/frontend_dist via vite config
       # -------------------------
       - name: Build frontend
         working-directory: frontend
@@ -53,30 +54,76 @@ jobs:
           Write-Host ">> Source path: $env:GITHUB_WORKSPACE\backend_ai"
           Write-Host ">> Listing source..."
           Get-ChildItem "$env:GITHUB_WORKSPACE\backend_ai" | Select-Object Name
+
+          Write-Host ">> Ensuring destination exists..."
+          if (-not (Test-Path "C:\framelens\backend_ai")) {
+            New-Item -ItemType Directory -Path "C:\framelens\backend_ai" -Force
+          }
+
           Write-Host ">> Copying backend_ai..."
           Copy-Item -Path "$env:GITHUB_WORKSPACE\backend_ai\*" `
-            -Destination "C:\ai-image-generator\backend_ai" `
+            -Destination "C:\framelens\backend_ai" `
             -Recurse -Force -Exclude "outputs","venv","__pycache__" `
             -ErrorAction Stop
+
           Write-Host ">> Done"
 
       # -------------------------
-      # 6. Install Python dependencies
+      # 6. Copy service XML
+      # kalau framelens-service.xml ada di root repo
+      # -------------------------
+      - name: Copy service XML
+        shell: powershell
+        run: |
+          Write-Host ">> Copying FrameLens service XML..."
+          Copy-Item -Path "$env:GITHUB_WORKSPACE\framelens-service.xml" `
+            -Destination "C:\framelens\framelens-service.xml" `
+            -Force -ErrorAction Stop
+          Write-Host ">> Done"
+
+      # -------------------------
+      # 7. Ensure logs directory exists
+      # -------------------------
+      - name: Ensure logs directory
+        shell: powershell
+        run: |
+          Write-Host ">> Ensuring logs directory exists..."
+          New-Item -ItemType Directory -Force "C:\framelens\backend_ai\logs"
+          Write-Host ">> Done"
+
+      # -------------------------
+      # 8. Install Python dependencies
       # -------------------------
       - name: Install Python dependencies
         shell: powershell
         run: |
           Write-Host ">> Installing Python deps..."
           C:\laragon\bin\python\python-3.10\python.exe -m pip install `
-            -r C:\ai-image-generator\backend_ai\requirements.txt --quiet
+            -r C:\framelens\backend_ai\requirements.txt --quiet
           Write-Host ">> Done"
 
       # -------------------------
-      # 7. Start service
+      # 9. Start service
       # -------------------------
       - name: Start FrameLens service
         shell: powershell
         run: |
           Write-Host ">> Starting FrameLens service..."
           Start-Service -Name "FrameLens"
+          Start-Sleep -Seconds 5
+
+          Write-Host ">> FrameLens service status:"
+          Get-Service -Name "FrameLens"
+
+          $svc = Get-Service -Name "FrameLens"
+          if ($svc.Status -ne "Running") {
+            Write-Host ">> Recent logs:"
+            if (Test-Path "C:\framelens\backend_ai\logs") {
+              Get-ChildItem "C:\framelens\backend_ai\logs" | Sort-Object LastWriteTime -Descending | Select-Object -First 5
+              Get-Content "C:\framelens\backend_ai\logs\*.log" -Tail 100 -ErrorAction SilentlyContinue
+            }
+
+            throw "FrameLens service failed to start"
+          }
+
           Write-Host ">> Deploy selesai"
