@@ -477,6 +477,24 @@ select {
   transform: none;
 }
 
+.sidebar-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px 4px;
+  margin-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-footer-brand span {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.38);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sidebar.collapsed .sidebar-logo,
 .sidebar.collapsed .sidebar-profile {
   padding-left: 1rem;

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -40,6 +41,8 @@ import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
 import AutoFixHighRoundedIcon from "@mui/icons-material/AutoFixHighRounded";
 // ── NEW: reference icon
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import PhotoLibraryRoundedIcon from "@mui/icons-material/PhotoLibraryRounded";
 import api from "../api/client";
 
 /* ─── Google Fonts ─── */
@@ -53,6 +56,7 @@ const FontStyle = () => (
     @keyframes orbDrift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(16px,18px) scale(1.05)} }
     @keyframes gridPulse { 0%,100%{opacity:0.45} 50%{opacity:0.7} }
     @keyframes fadeR { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   `}</style>
 );
 
@@ -348,11 +352,20 @@ const ASPECT_RATIO_OPTIONS = [
 ];
 
 const RESOLUTION_OPTIONS = [
-  { value: "original", label: "Original" },
-  { value: "1920x1080", label: "Full HD" },
-  { value: "2560x1440", label: "2K" },
-  { value: "3840x2160", label: "4K" },
+  { value: "original",  label: "Original" },
+  { value: "hd",       label: "HD  (~720p)" },
+  { value: "full-hd",  label: "Full HD  (~1080p)" },
+  { value: "2k",       label: "2K  (~1440p)" },
+  { value: "4k",       label: "4K  (~2160p)" },
 ];
+
+// Maps resolution key → max long-edge pixels (preserves aspect ratio)
+const RESOLUTION_MAX_PX = {
+  "hd":      1280,
+  "full-hd": 1920,
+  "2k":      2560,
+  "4k":      3840,
+};
 
 const BATCH_OPTIONS = [
   { value: 1, label: "1 Gambar" },
@@ -953,6 +966,11 @@ export default function ImageEditorPage() {
   // ── NEW: ref image input
   const refFileInputRef = useRef(null);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [fromGallery, setFromGallery] = useState(Boolean(location.state?.fromGalleryUrl));
+  const fromGalleryInitName = location.state?.fromGalleryName || "";
+
   const [files, setFiles] = useState([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1004,6 +1022,25 @@ export default function ImageEditorPage() {
     return () => refPreviewUrls.forEach((i) => URL.revokeObjectURL(i.url));
   }, [refPreviewUrls]);
 
+  // Auto-load image + prompt when navigated from Gallery
+  useEffect(() => {
+    const { fromGalleryUrl, fromGalleryName, fromGalleryPrompt } = location.state || {};
+    if (!fromGalleryUrl) return;
+    // Clear the navigation state so refresh doesn't re-trigger
+    navigate(location.pathname, { replace: true, state: {} });
+    if (fromGalleryPrompt) setPrompt(fromGalleryPrompt);
+    fetch(fromGalleryUrl)
+      .then((r) => r.blob())
+      .then((blob) => {
+        const name = fromGalleryName || "gallery-image.png";
+        const ext  = name.split(".").pop() || "png";
+        const mime = blob.type || `image/${ext}`;
+        const file = new File([blob], name, { type: mime });
+        setFiles([file]);
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const primaryPreviewUrl = previewUrls[0]?.url || "";
   const isSingleSourceMode = files.length <= 1;
   const activePresetData = useMemo(() => PRESETS.find((i) => i.key === activePreset) || null, [activePreset]);
@@ -1018,8 +1055,10 @@ export default function ImageEditorPage() {
 
   const buildFinalPrompt = () => {
     const r = aspectRatio !== "original" ? ` Use aspect ratio ${aspectRatio}.` : "";
-    const res = resolution !== "original" ? ` Target resolution ${resolution}.` : "";
-    // ── NEW: add reference note if ref images exist
+    const maxPx = RESOLUTION_MAX_PX[resolution];
+    const res = maxPx
+      ? ` Output at the highest quality possible, with the longest side at most ${maxPx}px. Do NOT change the aspect ratio — keep the original image proportions exactly.`
+      : "";
     const ref = refFiles.length > 0
       ? ` Use the provided ${refFiles.length} reference image${refFiles.length > 1 ? "s" : ""} as visual/style reference.`
       : "";
@@ -1216,7 +1255,9 @@ export default function ImageEditorPage() {
     fd.append("prompt", finalPrompt);
     fd.append("batch_size", String(requestedBatch));
     fd.append("aspect_ratio", aspectRatio);
-    fd.append("resolution", resolution);
+    // Send max long-edge px to backend (or "original" if not set)
+    const maxPx = RESOLUTION_MAX_PX[resolution];
+    fd.append("resolution", maxPx ? String(maxPx) : "original");
 
     // ── NEW: append each reference image
     refFiles.forEach((refFile, idx) => {
@@ -1390,8 +1431,7 @@ export default function ImageEditorPage() {
   const cardShell = {
     borderRadius: "24px",
     border: "1px solid rgba(35,57,113,0.18)",
-    background: "transparent",
-    backdropFilter: "blur(2px)",
+    background: "#fff",
     boxShadow:
       "0 2px 8px rgba(0,0,0,0.05), 0 16px 40px -8px rgba(35,57,113,0.13), inset 0 1px 0 rgba(255,255,255,0.9)",
     overflow: "hidden",
@@ -1422,9 +1462,61 @@ export default function ImageEditorPage() {
         />
 
       <Stack spacing={4}>
+
+        {/* ── Back to Gallery banner (shown when user came from Gallery) ── */}
+        {fromGallery && (
+          <Box
+            sx={{
+              display:"flex", alignItems:{ xs:"flex-start", sm:"center" }, flexDirection:{ xs:"column", sm:"row" }, gap:1.5,
+              px:2.5, py:1.6,
+              borderRadius:"16px",
+              background:"#fff",
+              border:"1px solid rgba(35,57,113,0.18)",
+              boxShadow:"0 2px 8px rgba(0,0,0,0.05), 0 8px 24px -4px rgba(35,57,113,0.10)",
+              animation:"slideUp 0.3s ease",
+            }}
+          >
+            <Stack direction="row" spacing={1.2} alignItems="center" sx={{ flex:1, minWidth:0 }}>
+              <Box sx={{ width:36, height:36, borderRadius:"11px", flexShrink:0, background:"rgba(35,57,113,0.08)", display:"flex", alignItems:"center", justifyContent:"center", border:"1px solid rgba(35,57,113,0.15)" }}>
+                <PhotoLibraryRoundedIcon sx={{ fontSize:18, color:"#233971" }}/>
+              </Box>
+              <Box sx={{ minWidth:0 }}>
+                <Typography sx={{ ...F, fontSize:"0.83rem", fontWeight:700, color:"#0f172a", lineHeight:1.3 }}>
+                  Gambar &amp; prompt dari Gallery sudah dimuat
+                </Typography>
+                {fromGalleryInitName && (
+                  <Typography sx={{ ...F, fontSize:"0.71rem", color:"#64748b", mt:"2px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:360 }}>
+                    {fromGalleryInitName}
+                  </Typography>
+                )}
+                <Typography sx={{ ...F, fontSize:"0.71rem", color:"#94a3b8", mt:"1px" }}>
+                  Ubah prompt lalu klik Generate untuk buat versi baru.
+                </Typography>
+              </Box>
+            </Stack>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ArrowBackRoundedIcon sx={{ fontSize:"16px !important" }}/>}
+              onClick={()=>navigate("/")}
+              sx={{
+                fontFamily:"'Sora',sans-serif",
+                textTransform:"none", fontWeight:700, fontSize:"0.80rem",
+                borderRadius:"12px",
+                color:"#233971",
+                borderColor:"rgba(35,57,113,0.3)",
+                background:"transparent",
+                px:2, py:0.7, flexShrink:0,
+                "&:hover":{ background:"rgba(35,57,113,0.05)", borderColor:"rgba(35,57,113,0.5)" },
+              }}
+            >
+              Kembali ke Gallery
+            </Button>
+          </Box>
+        )}
+
         <Stack direction={{ xs: "column", lg: "row" }} spacing={3} alignItems="stretch">
           <Card elevation={0} sx={{ ...cardShell, flex: 1.05 }}>
-            <CardBg variant="left" />
 
             <Box sx={{ position: "absolute", bottom: 0, left: 0, width: 130, height: 130, borderRadius: "0 28px 0 24px", background: "linear-gradient(135deg,rgba(35,57,113,0.10) 0%,rgba(46,79,163,0.14) 100%)", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 1 }}>
               <LayersRoundedIcon sx={{ fontSize: 48, color: "#233971", opacity: 0.35, transform: "rotate(-8deg)" }} />
@@ -1819,7 +1911,6 @@ export default function ImageEditorPage() {
           </Card>
 
           <Card elevation={0} sx={{ ...cardShell, flex: 1 }}>
-            <CardBg variant="right" />
 
             <Box sx={{ position: "absolute", bottom: 0, left: 0, width: 130, height: 130, borderRadius: "0 28px 0 24px", background: "linear-gradient(135deg,rgba(35,57,113,0.10) 0%,rgba(26,82,118,0.14) 100%)", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 1 }}>
               <DownloadIcon sx={{ fontSize: 48, color: "#233971", opacity: 0.35, transform: "rotate(-8deg)" }} />

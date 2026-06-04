@@ -339,6 +339,13 @@ function Sidebar({
           <ArrowBackRoundedIcon className="nav-icon" aria-hidden="true" />
           <span className="nav-text">PilarGroup</span>
         </a>
+
+        {!collapsed && (
+          <div className="sidebar-footer-brand">
+            <span>© 2026 PT Pilar Niaga Makmur</span>
+            <span>Developed by IT Team</span>
+          </div>
+        )}
       </div>
     </aside>
   )

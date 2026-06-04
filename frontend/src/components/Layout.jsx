@@ -57,10 +57,6 @@ export default function Layout({ children }) {
           <main className="dashboard-main">
             {children}
 
-            <footer className="dashboard-footer">
-              <span>© 2026 PT Pilar Niaga Makmur. All rights reserved.</span>
-              <span>Developed by IT Team PT Pilar Niaga Makmur.</span>
-            </footer>
           </main>
         </LayoutHeaderActionsContext.Provider>
       </div>
