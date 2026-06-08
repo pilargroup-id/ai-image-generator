@@ -150,7 +150,7 @@ const DEFAULT_DATA = {
   layout: {
     structure: "Z Pattern",
     sections: {
-      top_left: { content: "GOSAVE Border Header", width: "35%" },
+      top_left: { content: "Brand Header", width: "35%" },
       top_right: { content: "Product Name + Headline", width: "35%" },
       center_left: { content: "Hero Product", width: "70-80%" },
       right_side: { content: "USP Features", width: "20-25%" },
@@ -187,7 +187,7 @@ const DEFAULT_DATA = {
     ],
   },
   branding: {
-    border: { type: "GOSAVE Marketplace Border", aspect_ratio: "1:1", preserve_layout: true, header_position: "Top Left" },
+    border: { type: "Brand Border", aspect_ratio: "1:1", preserve_layout: true, header_position: "Top Left" },
   },
   color_palette: { primary: "#1E3A8A", secondary: "#FFD500", accent: "#FFFFFF", text_dark: "#000000" },
   visual_effects: { depth: true, layering: true, realistic_shadow: true, realistic_lighting: true, high_detail: true, premium_finish: true },
@@ -200,7 +200,7 @@ const DEFAULT_DATA = {
 }
 
 const DEFAULT_INSTRUCTIONS =
-  "Use the provided 1 reference image as visual/style reference. Use aspect ratio 1:1. Output at the highest quality possible, with the longest side at most 1920px. Do NOT change the aspect ratio — keep the original image proportions exactly."
+  "Use aspect ratio 1:1. Output at the highest quality possible, with the longest side at most 1920px. Do NOT change the aspect ratio — keep the original image proportions exactly."
 
 export default function PromptBuilderPage() {
   const [data, setData]             = useState(DEFAULT_DATA)
