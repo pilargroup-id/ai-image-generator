@@ -1219,35 +1219,35 @@ function DatePickerBox({ label, value, onChange }) {
 
                         <Box sx={{ flexShrink:0 }}>
                           {!selectMode ? (
-                            <div style={{ display:"grid", gap:"8px" }}>
+                            <div style={{ display:"grid", gap:"6px" }}>
                               <button
                                 type="button"
                                 className="users-table-card__action"
-                                style={{ width:"100%", borderRadius:"14px", fontSize:"0.82rem", gap:"6px", fontFamily:"'Sora',sans-serif" }}
+                                style={{ width:"100%", borderRadius:"12px", fontSize:"0.78rem", gap:"6px", fontFamily:"'Sora',sans-serif", minHeight:"36px", padding:"0.55rem 1rem" }}
                                 onClick={()=>handleEditInEditor(item)}
                               >
-                                <EditRoundedIcon style={{ fontSize:16, flexShrink:0 }}/>
+                                <EditRoundedIcon style={{ fontSize:15, flexShrink:0 }}/>
                                 Edit &amp; Regenerate
                               </button>
-                              <div style={{ display:"flex", gap:"7px" }}>
+                              <div style={{ display:"flex", gap:"6px" }}>
                                 <button
                                   type="button"
                                   className="users-table__accordion-button"
-                                  style={{ flex:1, fontSize:"0.78rem", gap:"5px", fontFamily:"'Sora',sans-serif" }}
+                                  style={{ flex:1, fontSize:"0.74rem", gap:"4px", fontFamily:"'Sora',sans-serif", minHeight:"32px", padding:"0.45rem 0.7rem" }}
                                   onClick={()=>handleDownload(item.imageUrl, item.fileName||`generated-${item.id}.png`)}
                                 >
-                                  <DownloadRoundedIcon style={{ fontSize:14 }}/>
+                                  <DownloadRoundedIcon style={{ fontSize:13 }}/>
                                   Download
                                 </button>
                                 <Tooltip title="Delete image" placement="top">
                                   <button
                                     type="button"
                                     className="users-table__accordion-button users-table__accordion-button--danger"
-                                    style={{ padding:"0.6rem 0.65rem", gap:0, flexShrink:0 }}
+                                    style={{ padding:"0.45rem 0.55rem", gap:0, flexShrink:0, minHeight:"32px" }}
                                     onClick={()=>openConfirm("single", item.id)}
                                     aria-label="Delete image"
                                   >
-                                    <DeleteOutlineRoundedIcon style={{ fontSize:16 }}/>
+                                    <DeleteOutlineRoundedIcon style={{ fontSize:15 }}/>
                                   </button>
                                 </Tooltip>
                               </div>
@@ -1388,77 +1388,53 @@ function DatePickerBox({ label, value, onChange }) {
             <DialogTitle sx={{
               fontFamily:"'Manrope','Segoe UI',sans-serif",
               fontWeight:700,
-              fontSize:"1.2rem",
+              fontSize:"1.1rem",
               color:"#fff",
               background:"linear-gradient(180deg,rgba(24,43,88,1) 0%,rgba(27,55,112,0.96) 100%)",
               borderBottom:"1px solid rgba(255,255,255,0.1)",
-              pb:1.5,
+              px:2.5, py:1.8,
               display:"flex",
               alignItems:"center",
               justifyContent:"space-between",
+              gap:1,
             }}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <VisibilityRoundedIcon sx={{ color:"rgba(233,196,106,0.9)", fontSize:20 }}/>
-                Generated Image Preview
+              <Stack direction="row" spacing={1.2} alignItems="center" sx={{ minWidth:0 }}>
+                <Box sx={{
+                  width:34, height:34, borderRadius:"10px", flexShrink:0,
+                  background:"rgba(255,255,255,0.12)",
+                  border:"1px solid rgba(255,255,255,0.18)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                }}>
+                  <CropOriginalIcon sx={{ fontSize:17, color:"rgba(233,196,106,0.95)" }}/>
+                </Box>
+                <Box sx={{ minWidth:0 }}>
+                  <Typography sx={{ fontFamily:"'Manrope','Segoe UI',sans-serif", fontWeight:800, fontSize:"1rem", color:"#fff", lineHeight:1.2 }}>
+                    Image Preview
+                  </Typography>
+                  <Typography sx={{ fontFamily:"'Sora',sans-serif", fontWeight:500, fontSize:"0.68rem", color:"rgba(255,255,255,0.55)", lineHeight:1.2, mt:"2px" }}>
+                    Scroll or pinch to zoom · drag to pan
+                  </Typography>
+                </Box>
               </Stack>
-              <IconButton size="small" onClick={()=>setPreviewItem(null)} sx={{ width:32,height:32,borderRadius:"9px",border:"1px solid rgba(255,255,255,0.18)",background:"rgba(255,255,255,0.1)",color:"#fff","&:hover":{background:"rgba(255,255,255,0.18)"} }}>
+              <IconButton size="small" onClick={()=>setPreviewItem(null)} sx={{ width:32,height:32,borderRadius:"9px",flexShrink:0,border:"1px solid rgba(255,255,255,0.18)",background:"rgba(255,255,255,0.08)",color:"#fff","&:hover":{background:"rgba(255,255,255,0.18)"} }}>
                 <CloseRoundedIcon sx={{ fontSize:16 }}/>
               </IconButton>
             </DialogTitle>
 
-            <DialogContent sx={{ pt:2.5, maxHeight:"80vh", overflowY:"auto", overscrollBehavior:"contain" }}>
+            <DialogContent sx={{ pt:2, pb:2.5, px:{ xs:2, sm:3 }, maxHeight:"80vh", overflowY:"auto", overscrollBehavior:"contain" }}>
               {previewItem && (
-                <Stack spacing={2.4}>
+                <Stack spacing={2}>
                   {/* Zoom controls */}
-                  <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-                    <Stack direction="row" spacing={0.8} alignItems="center">
-                      <Typography sx={{ ...F, fontSize:"0.72rem", color:"#94a3b8", fontWeight:600 }}>
-                        Scroll = zoom · Drag to pan · Pinch = zoom (mobile)
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={0.8} alignItems="center">
-                      <Typography sx={{ ...F, fontSize:"0.75rem", color:"#233971", fontWeight:700 }}>
+                  <Stack direction="row" justifyContent="flex-end" alignItems="center"
+                    sx={{ px:1, py:0.6, borderRadius:"10px", background:"rgba(232,237,248,0.55)", border:"1px solid rgba(35,57,113,0.08)" }}
+                  >
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Typography sx={{ ...F, fontSize:"0.72rem", color:"#233971", fontWeight:700, minWidth:38, textAlign:"center" }}>
                         {Math.round(previewZoom * 100)}%
                       </Typography>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={()=>setPreviewZoom((v) => Math.max(0.25, parseFloat((v - 0.25).toFixed(2))))}
-                        sx={{
-                          ...F, textTransform:"none", fontWeight:700, fontSize:"0.78rem",
-                          borderRadius:"10px", minWidth:40, px:1,
-                          borderColor:"rgba(35,57,113,0.25)", color:"#233971",
-                          "&:hover":{ background:"rgba(35,57,113,0.07)", borderColor:"rgba(35,57,113,0.4)" },
-                        }}
-                      >
-                        −
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={resetZoom}
-                        sx={{
-                          ...F, textTransform:"none", fontWeight:700, fontSize:"0.72rem",
-                          borderRadius:"10px", minWidth:48, px:1,
-                          borderColor:"rgba(35,57,113,0.25)", color:"#64748b",
-                          "&:hover":{ background:"rgba(35,57,113,0.06)" },
-                        }}
-                      >
-                        Reset
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={()=>setPreviewZoom((v) => Math.min(5, parseFloat((v + 0.25).toFixed(2))))}
-                        sx={{
-                          ...F, textTransform:"none", fontWeight:700, fontSize:"0.78rem",
-                          borderRadius:"10px", minWidth:40, px:1,
-                          borderColor:"rgba(35,57,113,0.25)", color:"#233971",
-                          "&:hover":{ background:"rgba(35,57,113,0.07)", borderColor:"rgba(35,57,113,0.4)" },
-                        }}
-                      >
-                        +
-                      </Button>
+                      <CreateButton variant="accordion" onClick={()=>setPreviewZoom(v=>Math.max(0.25,parseFloat((v-0.25).toFixed(2))))} style={{ minHeight:28,padding:"0.2rem 0.6rem",fontSize:"0.85rem",borderRadius:"8px" }}>−</CreateButton>
+                      <CreateButton variant="accordion" onClick={resetZoom} style={{ minHeight:28,padding:"0.2rem 0.55rem",fontSize:"0.7rem",borderRadius:"8px" }}>Reset</CreateButton>
+                      <CreateButton variant="accordion" onClick={()=>setPreviewZoom(v=>Math.min(5,parseFloat((v+0.25).toFixed(2))))} style={{ minHeight:28,padding:"0.2rem 0.6rem",fontSize:"0.85rem",borderRadius:"8px" }}>+</CreateButton>
                     </Stack>
                   </Stack>
 
@@ -1571,51 +1547,26 @@ function DatePickerBox({ label, value, onChange }) {
                     </Stack>
                   </Paper>
 
-                  <Stack direction={{ xs:"column", sm:"row" }} spacing={1.2}>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      startIcon={<EditRoundedIcon/>}
+                  <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
+                    <button
+                      type="button"
+                      className="users-table-card__action"
+                      style={{ flex:1, minWidth:"120px", borderRadius:"12px", fontSize:"0.86rem", gap:"7px", fontFamily:"'Manrope','Segoe UI',sans-serif", minHeight:"44px" }}
                       onClick={()=>{ setPreviewItem(null); handleEditInEditor(previewItem); }}
-                      sx={{
-                        borderRadius:"14px", textTransform:"none", fontWeight:700, ...F, py:1.2,
-                        background:"linear-gradient(135deg,#233971,#2e4fa3)",
-                        boxShadow:"0 6px 18px rgba(35,57,113,0.28)",
-                        "&:hover":{ background:"linear-gradient(135deg,#1a2d5a,#233971)", boxShadow:"0 10px 24px rgba(35,57,113,0.36)", transform:"translateY(-1px)" },
-                        transition:"all 0.2s",
-                      }}
                     >
+                      <EditRoundedIcon style={{ fontSize:17 }}/>
                       Edit in Editor
-                    </Button>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      startIcon={<DownloadRoundedIcon/>}
+                    </button>
+                    <button
+                      type="button"
+                      className="users-table__accordion-button"
+                      style={{ flex:1, minWidth:"120px", borderRadius:"12px", fontSize:"0.86rem", gap:"7px", fontFamily:"'Manrope','Segoe UI',sans-serif", minHeight:"44px" }}
                       onClick={()=>handleDownload(previewItem.imageUrl, previewItem.fileName||`generated-${previewItem.id}.png`)}
-                      sx={{
-                        borderRadius:"14px", textTransform:"none", fontWeight:700, ...F, py:1.2,
-                        background:"linear-gradient(135deg,#10b981,#34d399)",
-                        boxShadow:"0 6px 18px rgba(16,185,129,0.25)",
-                        "&:hover":{ background:"linear-gradient(135deg,#059669,#10b981)", boxShadow:"0 10px 24px rgba(16,185,129,0.32)", transform:"translateY(-1px)" },
-                        transition:"all 0.2s",
-                      }}
                     >
-                      Download Image
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      onClick={()=>setPreviewItem(null)}
-                      sx={{
-                        borderRadius:"14px", textTransform:"none", fontWeight:700, ...F, py:1.2,
-                        borderColor:"rgba(35,57,113,0.25)", color:"#64748b",
-                        "&:hover":{ background:"rgba(232,237,248,0.8)", borderColor:"rgba(35,57,113,0.4)" },
-                        transition:"all 0.2s",
-                      }}
-                    >
-                      Close
-                    </Button>
-                  </Stack>
+                      <DownloadRoundedIcon style={{ fontSize:17 }}/>
+                      Download
+                    </button>
+                  </div>
                 </Stack>
               )}
             </DialogContent>
