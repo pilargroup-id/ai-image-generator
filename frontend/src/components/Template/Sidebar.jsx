@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
-  ArrowBackRounded as ArrowBackRoundedIcon,
   CloseRounded as CloseRoundedIcon,
+  ExitToAppRounded as ExitToAppRoundedIcon,
   KeyboardArrowLeftRounded as KeyboardArrowLeftRoundedIcon,
   KeyboardArrowRightRounded as KeyboardArrowRightRoundedIcon,
 } from '@mui/icons-material'
@@ -114,7 +114,6 @@ function SidebarNavItem({
         <button
           type="button"
           className={className}
-          data-tooltip={collapsed ? item.label : undefined}
           aria-controls={submenuId}
           aria-current={active && !hasChildren ? 'page' : undefined}
           aria-expanded={hasChildren ? expanded : undefined}
@@ -126,7 +125,6 @@ function SidebarNavItem({
         <a
           href={item.href}
           className={className}
-          data-tooltip={collapsed ? item.label : undefined}
           aria-current={active ? 'page' : undefined}
           onClick={handleClick}
         >
@@ -287,7 +285,6 @@ function Sidebar({
         <div className="profile-content">
           <div className="profile-avatar">
             <span className="profile-avatar__badge">{initials}</span>
-            <div className="online-status" />
           </div>
 
           <div className="profile-info">
@@ -329,15 +326,14 @@ function Sidebar({
         <a
           href={PILAR_GROUP_DASHBOARD_URL}
           className="nav-item sidebar-external-link"
-          data-tooltip={collapsed ? 'PilarGroup' : undefined}
           onClick={() => {
             if (mobileOpen) {
               onCloseMobile?.()
             }
           }}
         >
-          <ArrowBackRoundedIcon className="nav-icon" aria-hidden="true" />
-          <span className="nav-text">PilarGroup</span>
+          <ExitToAppRoundedIcon className="nav-icon" aria-hidden="true" style={{ color: '#fff', transform: 'scaleX(-1)' }} />
+          <span className="nav-text">Back Pilargroup</span>
         </a>
 
         {!collapsed && (

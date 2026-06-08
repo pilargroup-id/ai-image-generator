@@ -208,10 +208,10 @@ const RESOLUTION_MAX_PX = {
 };
 
 const BATCH_OPTIONS = [
-  { value: 1, label: "1 Gambar" },
-  { value: 2, label: "2 Gambar" },
-  { value: 3, label: "3 Gambar" },
-  { value: 4, label: "4 Gambar" },
+  { value: 1, label: "1 Image" },
+  { value: 2, label: "2 Images" },
+  { value: 3, label: "3 Images" },
+  { value: 4, label: "4 Images" },
 ];
 
 function getAspectRatioValue(v) {

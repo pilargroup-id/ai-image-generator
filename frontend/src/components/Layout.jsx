@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Outlet } from 'react-router-dom'
 
 import Header from './Template/Header'
 import Sidebar from './Template/Sidebar'
@@ -8,7 +8,7 @@ import { primaryNavigationItems } from '../services/navigation.js'
 import LayoutHeaderActionsContext from './layoutHeaderContext.js'
 import { useAuth } from '../auth/AuthContext'
 
-export default function Layout({ children }) {
+export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [pageToolbarActions, setPageToolbarActions] = useState([])
@@ -55,8 +55,7 @@ export default function Layout({ children }) {
 
         <LayoutHeaderActionsContext.Provider value={setPageToolbarActions}>
           <main className="dashboard-main">
-            {children}
-
+            <Outlet />
           </main>
         </LayoutHeaderActionsContext.Provider>
       </div>

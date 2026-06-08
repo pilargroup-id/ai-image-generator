@@ -126,7 +126,7 @@ function SectionHeader({ label, chip, sectionKey, isHidden, onToggle, children }
       </Stack>
       <Stack direction="row" spacing={0.8} alignItems="center">
         {children}
-        <Tooltip title={isHidden ? `Tambahkan kembali ${label}` : `Hapus ${label} dari prompt`}>
+        <Tooltip title={isHidden ? `Add back ${label}` : `Remove ${label} from prompt`}>
           <IconButton
             size="small"
             onClick={() => onToggle(sectionKey)}
@@ -188,7 +188,6 @@ const DEFAULT_DATA = {
       center_left:  { content: "Hero Product",                        width: "55-60%", position: "Lower Left" },
       center_right: { content: "Main Headline and Product Subtitle",  width: "45%",    position: "Upper Right" },
       right_side:   { content: "USP Feature Pills",                   width: "38-42%", position: "Middle Right" },
-      bottom_right: { content: "Color Variant Swatches",              width: "30%",    position: "Lower Right" },
     },
   },
   background: {
@@ -268,17 +267,6 @@ const DEFAULT_DATA = {
       { thumbnail: "Close up white microfiber mop head",        title: "Kain\nMicrofiber"          },
     ],
   },
-  color_variant_section: {
-    position: "Bottom Right",
-    alignment: "Center",
-    label: { text: "Varian Warna :", font_style: "Rounded Sans Serif", font_weight: "Regular", color: "#000000", size: "Small Medium" },
-    swatches: [
-      { color_name: "Gray",   hex: "#5F5F5F" },
-      { color_name: "Tosca",  hex: "#00A6A6" },
-      { color_name: "Purple", hex: "#A86AC2" },
-    ],
-    swatch_style: { shape: "Square", border: "#FFFFFF", spacing: "Small", size: "Medium" },
-  },
   color_palette: {
     primary:         "#B66AD8",
     secondary:       "#FFFFFF",
@@ -288,6 +276,7 @@ const DEFAULT_DATA = {
     text_light:      "#FFFFFF",
   },
   typography: {
+    font_family: "Modern Sans-Serif (e.g. Poppins, Nunito, or similar)",
     headline: { style: "Extra Bold Sans Serif", weight: "900", letter_spacing: "Tight", case: "Uppercase" },
     subtitle:  { style: "Italic Sans Serif",     weight: "400" },
     usp:       { style: "Bold Rounded Sans Serif", weight: "800" },
@@ -299,11 +288,11 @@ const DEFAULT_DATA = {
   },
   visual_priority: [
     "Spin Mop Product", "BERSIH TANPA EFFORT Headline", "Feature Pills",
-    "Product Subtitle", "Top Icons", "Color Variants", "Kitchen Background",
+    "Product Subtitle", "Top Icons", "Kitchen Background",
   ],
   design_formula: {
     product_focus: "55%", headline: "20%", usp: "15%",
-    icons: "5%", color_variants: "3%", background_support: "2%",
+    icons: "5%", background_support: "2%",
   },
   rendering_style: {
     quality: "Highest Possible", photorealistic: true, commercial_grade: true,
@@ -414,7 +403,7 @@ export default function PromptBuilderGTPage() {
                     <Typography variant="h6" sx={{ ...F, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>
                       Prompt Builder GT
                     </Typography>
-                    <Chip size="small" label="Goto / Home Product" sx={{ ...F, fontWeight: 700, fontSize: "0.68rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />
+                    <Chip size="small" label="Goto / Produk Rumah" sx={{ ...F, fontWeight: 700, fontSize: "0.68rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />
                   </Stack>
                   <Typography sx={{ ...F, fontSize: "0.82rem", color: "#64748b", mt: "2px" }}>
                     Template marketplace home product — JSON prompt auto-generated
@@ -452,14 +441,14 @@ export default function PromptBuilderGTPage() {
                   />
                   <Collapse in={!isHidden("product")}>
                     <Stack spacing={1.5}>
-                      <TextField fullWidth label="Product Name" size="small" value={data.product.name} onChange={e => set("product.name", e.target.value)} helperText="Nama produk. Contoh: Spin Mop Ultra 2 in 1" sx={inputSx} />
+                      <TextField fullWidth label="Product Name" size="small" value={data.product.name} onChange={e => set("product.name", e.target.value)} helperText="Product name. Example: Spin Mop Ultra 2 in 1" sx={inputSx} />
                       <Stack direction="row" spacing={1.5}>
                         <TextField fullWidth label="Product Category" size="small" value={data.product.category} onChange={e => set("product.category", e.target.value)} sx={inputSx} />
                         <TextField select fullWidth label="View Angle" size="small" value={data.product.view_angle} onChange={e => set("product.view_angle", e.target.value)} sx={inputSx}>
                           {VIEW_ANGLES.map(v => <MenuItem key={v} value={v} sx={F}>{v}</MenuItem>)}
                         </TextField>
                       </Stack>
-                      <TextField fullWidth label="Main Color" size="small" value={data.product.main_color} onChange={e => set("product.main_color", e.target.value)} helperText="Warna utama produk. Contoh: Purple and White" sx={inputSx} />
+                      <TextField fullWidth label="Main Color" size="small" value={data.product.main_color} onChange={e => set("product.main_color", e.target.value)} helperText="Main product color. Example: Purple and White" sx={inputSx} />
                     </Stack>
                   </Collapse>
                 </Box>
@@ -473,6 +462,7 @@ export default function PromptBuilderGTPage() {
                   />
                   <Collapse in={!isHidden("headline_section")}>
                     <Stack spacing={1.5}>
+                      <TextField fullWidth label="Font Family" size="small" value={data.typography.font_family} onChange={e => set("typography.font_family", e.target.value)} helperText="Font used across the design. Example: Poppins, Nunito, Montserrat" sx={inputSx} />
                       <Box>
                         <Typography sx={{ ...sectionSub, mb: 0.8 }}>Main Headline</Typography>
                         <Stack direction="row" spacing={1.5} alignItems="center">
@@ -519,7 +509,7 @@ export default function PromptBuilderGTPage() {
                     </Box>
                     <Stack direction="row" spacing={1}>
                       <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                        <input value={newTarget} onChange={e => setNewTarget(e.target.value)} onKeyDown={e => e.key === "Enter" && addTarget()} placeholder="Tambah target market..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
+                        <input value={newTarget} onChange={e => setNewTarget(e.target.value)} onKeyDown={e => e.key === "Enter" && addTarget()} placeholder="Add target market..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
                       </Box>
                       <Button variant="contained" onClick={addTarget} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#233971,#2e4fa3)", boxShadow: "0 4px 12px rgba(35,57,113,0.32)", "&:hover": { background: "linear-gradient(135deg,#1a2d5a,#233971)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
                         <AddRoundedIcon />
@@ -554,7 +544,7 @@ export default function PromptBuilderGTPage() {
                         </Box>
                         <Stack direction="row" spacing={1}>
                           <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                            <input value={newElement} onChange={e => setNewEl(e.target.value)} onKeyDown={e => e.key === "Enter" && addElement()} placeholder="Contoh: Wooden Cabinet, White Tiles..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
+                            <input value={newElement} onChange={e => setNewEl(e.target.value)} onKeyDown={e => e.key === "Enter" && addElement()} placeholder="Example: Wooden Cabinet, White Tiles..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
                           </Box>
                           <Button variant="contained" onClick={addElement} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#166534,#16a34a)", boxShadow: "0 4px 12px rgba(22,101,52,0.28)", "&:hover": { background: "linear-gradient(135deg,#14532d,#166534)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
                             <AddRoundedIcon />
@@ -574,7 +564,7 @@ export default function PromptBuilderGTPage() {
                     {!isHidden("usp_section") && <Typography sx={{ ...sectionSub, fontSize: "0.75rem" }}>{data.usp_section.items.length} features</Typography>}
                   </SectionHeader>
                   <Collapse in={!isHidden("usp_section")}>
-                    <Typography sx={{ ...sectionSub, mb: 1.5 }}>Tampil sebagai pill list di sisi kanan desain</Typography>
+                    <Typography sx={{ ...sectionSub, mb: 1.5 }}>Displayed as pill list on the right side of the design</Typography>
                     <Stack spacing={1.2}>
                       {data.usp_section.items.map((item, i) => (
                         <Stack key={i} direction="row" spacing={1} alignItems="center">
@@ -592,7 +582,7 @@ export default function PromptBuilderGTPage() {
                       ))}
                       <Stack direction="row" spacing={1}>
                         <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px dashed rgba(35,57,113,0.28)", background: "rgba(255,255,255,0.55)", "&:focus-within": { borderColor: "#233971", borderStyle: "solid", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                          <input value={newUsp} onChange={e => setNewUsp(e.target.value)} onKeyDown={e => e.key === "Enter" && addUsp()} placeholder="Tambah fitur baru..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
+                          <input value={newUsp} onChange={e => setNewUsp(e.target.value)} onKeyDown={e => e.key === "Enter" && addUsp()} placeholder="Add new feature..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
                         </Box>
                         <Button variant="contained" onClick={addUsp} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#233971,#2e4fa3)", boxShadow: "0 4px 12px rgba(35,57,113,0.32)", "&:hover": { background: "linear-gradient(135deg,#1a2d5a,#233971)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
                           <AddRoundedIcon />
@@ -618,7 +608,7 @@ export default function PromptBuilderGTPage() {
                     </Box>
                     <Stack direction="row" spacing={1}>
                       <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px solid rgba(239,68,68,0.25)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", "&:focus-within": { borderColor: "#ef4444", boxShadow: "0 0 0 3px rgba(239,68,68,0.08)" }, overflow: "hidden" }}>
-                        <input value={newNeg} onChange={e => setNewNeg(e.target.value)} onKeyDown={e => e.key === "Enter" && addNeg()} placeholder="Tambah larangan... Contoh: Do not crop the product" style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
+                        <input value={newNeg} onChange={e => setNewNeg(e.target.value)} onKeyDown={e => e.key === "Enter" && addNeg()} placeholder="Add restriction... Example: Do not crop the product" style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
                       </Box>
                       <Button variant="contained" onClick={addNeg} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#dc2626,#ef4444)", boxShadow: "0 4px 12px rgba(239,68,68,0.28)", "&:hover": { background: "linear-gradient(135deg,#b91c1c,#dc2626)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
                         <AddRoundedIcon />
@@ -666,7 +656,7 @@ export default function PromptBuilderGTPage() {
                     Configuration & Output
                   </Typography>
                   <Typography sx={{ ...F, fontSize: "0.82rem", color: "#64748b", mt: "2px" }}>
-                    Atur warna & efek, lalu copy prompt lengkap
+                    Set colors & effects, then copy the full prompt
                   </Typography>
                 </Box>
 
@@ -697,24 +687,6 @@ export default function PromptBuilderGTPage() {
                       </Stack>
                     ))}
 
-                    <Divider sx={{ borderColor: "rgba(35,57,113,0.10)", my: 0.5 }} />
-                    <Typography sx={{ ...sectionSub, fontWeight: 600 }}>Warna Varian Produk</Typography>
-                    {data.color_variant_section.swatches.map((sw, i) => (
-                      <Stack key={i} direction="row" spacing={1.5} alignItems="center">
-                        <Box sx={{ position: "relative", width: 38, height: 38, borderRadius: "10px", border: "1.5px solid rgba(35,57,113,0.25)", overflow: "hidden", flexShrink: 0, boxShadow: "0 2px 8px rgba(35,57,113,0.12)", cursor: "pointer" }}>
-                          <input type="color" value={sw.hex} onChange={e => {
-                            const swatches = structuredClone(data.color_variant_section.swatches)
-                            swatches[i].hex = e.target.value
-                            set("color_variant_section.swatches", swatches)
-                          }} style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }} />
-                        </Box>
-                        <TextField value={sw.color_name} onChange={e => {
-                          const swatches = structuredClone(data.color_variant_section.swatches)
-                          swatches[i].color_name = e.target.value
-                          set("color_variant_section.swatches", swatches)
-                        }} fullWidth size="small" label={`Varian ${i + 1} — ${sw.hex}`} sx={{ ...inputSx, "& .MuiInputBase-input": { fontSize: "0.85rem" } }} />
-                      </Stack>
-                    ))}
                   </Stack>
                 </Box>
 
@@ -806,7 +778,7 @@ export default function PromptBuilderGTPage() {
 
                   {copied && (
                     <Alert severity="success" sx={{ borderRadius: "12px", ...F, fontSize: "0.8rem", mb: 1.5, border: "1px solid rgba(35,57,113,0.18)", background: "rgba(232,237,248,0.9)", "& .MuiAlert-icon": { color: "#233971" }, color: "#233971" }}>
-                      Prompt copied — paste langsung ke AI image generator!
+                      Prompt copied — paste directly into AI image generator!
                     </Alert>
                   )}
 

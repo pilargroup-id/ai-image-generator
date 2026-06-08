@@ -20,38 +20,12 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <Layout pageTitle="Gallery" pageSubtitle="Generated results saved on server">
-              <Gallery />
-            </Layout>
-          }
-        />
-        <Route
-          path="/image-editor"
-          element={
-            <Layout pageTitle="Image Editor" pageSubtitle="Edit images with AI">
-              <ImageEditorPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/prompt-builder"
-          element={
-            <Layout pageTitle="Prompt Builder GS" pageSubtitle="Build AI prompts — Industrial Safety Product">
-              <PromptBuilderPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/prompt-builder-gt"
-          element={
-            <Layout pageTitle="Prompt Builder GT" pageSubtitle="Build AI prompts — Home Product / Goto">
-              <PromptBuilderGTPage />
-            </Layout>
-          }
-        />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Gallery />} />
+          <Route path="/image-editor" element={<ImageEditorPage />} />
+          <Route path="/prompt-builder" element={<PromptBuilderPage />} />
+          <Route path="/prompt-builder-gt" element={<PromptBuilderGTPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )
