@@ -161,7 +161,7 @@ def build_generation_prompt(
     return f"{prompt}{quality_suffix}"
 
 
-def _compress_reference(data: bytes, mime_type: str, max_px: int = 768) -> bytes:
+def _compress_reference(data: bytes, max_px: int = 2048) -> bytes:
     try:
         img = Image.open(io.BytesIO(data))
         img.load()
@@ -171,7 +171,7 @@ def _compress_reference(data: bytes, mime_type: str, max_px: int = 768) -> bytes
             img = img.resize((round(w * scale), round(h * scale)), Image.LANCZOS)
         img = img.convert("RGB")
         buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=75, optimize=True)
+        img.save(buf, format="JPEG", quality=95, optimize=True)
         return buf.getvalue()
     except Exception:
         return data
@@ -201,11 +201,10 @@ def edit_image_with_gemini(
     valid_references = []
     for ref in (reference_images or [])[:8]:
         ref_data = ref.get("data")
-        ref_mime = ref.get("mime_type", "image/png")
         if not ref_data:
             continue
         # Compress reference images when there are many to stay within API limits
-        ref_data = _compress_reference(ref_data, ref_mime)
+        ref_data = _compress_reference(ref_data)
         valid_references.append(ref)
         contents.append(
             types.Part.from_bytes(

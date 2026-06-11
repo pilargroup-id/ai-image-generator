@@ -216,7 +216,7 @@ async def get_gallery(
 
     if by:
         kw = by.strip().lower()
-        items = [i for i in items if kw in (i["createdBy"] or "").lower()]
+        items = [i for i in items if kw == (i["createdBy"] or "").strip().lower()]
 
     return items
 
@@ -255,8 +255,6 @@ async def edit_image(
     image_bytes = await file.read()
     if not image_bytes:
         raise HTTPException(status_code=400, detail="File gambar kosong")
-    if len(image_bytes) > MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=400, detail=f"Ukuran file maksimal {MAX_FILE_SIZE_BYTES // (1024 * 1024)} MB")
 
     reference_images = []
     if reference_image_count > 0:
@@ -271,8 +269,6 @@ async def edit_image(
                     continue
                 ref_mime = (getattr(ref_field, "content_type", None) or "image/png").lower().strip()
                 if ref_mime not in ALLOWED_IMAGE_TYPES:
-                    continue
-                if len(ref_bytes) > MAX_FILE_SIZE_BYTES:
                     continue
                 reference_images.append({"data": ref_bytes, "mime_type": ref_mime})
             except Exception:

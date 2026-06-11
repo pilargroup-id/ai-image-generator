@@ -467,10 +467,10 @@ function DatePickerBox({ label, value, onChange }) {
     const [hovered,       setHovered]       = useState(null);
     const [selectMode,    setSelectMode]    = useState(false);
     const [selectedIds,   setSelectedIds]   = useState(new Set());
-    const [perPage,       setPerPage]       = useState(12);
+    const [perPage,       setPerPage]       = useState(25);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [confirmDialog, setConfirmDialog] = useState({ open:false, type:"", id:null, count:0 });
-    const PER_PAGE_OPTIONS = [6,12,24,48];
+    const PER_PAGE_OPTIONS = [12,25,50,100];
     const { user } = useAuth();
     const authorName = user?.name || user?.username || "Guest";
     const { search, dateFrom, dateTo, createdBy } = readGalleryFilterState(searchParams);
@@ -803,6 +803,7 @@ function DatePickerBox({ label, value, onChange }) {
                       fullWidth
                       value={createdBy}
                       onChange={e=>handleCreatedByChange(e.target.value)}
+                      SelectProps={{ displayEmpty: true }}
                       sx={{
                         "& .MuiOutlinedInput-root":{
                           borderRadius:"16px",
