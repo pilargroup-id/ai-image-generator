@@ -1,4 +1,4 @@
-  import { useEffect, useMemo, useRef, useState } from "react";
+  import { useEffect, useRef, useState } from "react";
   import { useSearchParams, useNavigate } from "react-router-dom";
   import { useAuth } from "../auth/AuthContext";
   import api from "../api/client";
@@ -47,6 +47,7 @@
     GALLERY_DATE_FROM_PARAM_KEY,
     GALLERY_DATE_TO_PARAM_KEY,
     GALLERY_SEARCH_PARAM_KEY,
+    GALLERY_CREATED_BY_PARAM_KEY,
     buildGalleryFilterSearchParams,
     readGalleryFilterState,
     resetGalleryFilterSearchParams,
@@ -471,8 +472,8 @@ function DatePickerBox({ label, value, onChange }) {
     const PER_PAGE_OPTIONS = [6,12,24,48];
     const { user } = useAuth();
     const authorName = user?.name || user?.username || "Guest";
-    const { search, dateFrom, dateTo } = readGalleryFilterState(searchParams);
-    const filterKey = `${search}\u0000${dateFrom}\u0000${dateTo}`;
+    const { search, dateFrom, dateTo, createdBy } = readGalleryFilterState(searchParams);
+    const filterKey = `${search}\u0000${dateFrom}\u0000${dateTo}\u0000${createdBy}`;
     const [pagination, setPagination] = useState({ filterKey, page:1 });
     const page = pagination.filterKey === filterKey ? pagination.page : 1;
     const setPage = (nextPageValue) => {
@@ -578,6 +579,15 @@ function DatePickerBox({ label, value, onChange }) {
       });
     };
 
+    const handleCreatedByChange = (value) => {
+      updateGallerySearchParams({
+        [GALLERY_SEARCH_PARAM_KEY]:     search,
+        [GALLERY_DATE_FROM_PARAM_KEY]:  dateFrom,
+        [GALLERY_DATE_TO_PARAM_KEY]:    dateTo,
+        [GALLERY_CREATED_BY_PARAM_KEY]: value,
+      });
+    };
+
     const handleConfirmAction = async () => {
       const { type, id } = confirmDialog;
       closeConfirm();
@@ -611,10 +621,16 @@ function DatePickerBox({ label, value, onChange }) {
     };
 
     useEffect(() => {
-      api.get("/gallery")
+      const params = new URLSearchParams();
+      if (search)    params.set("q",    search);
+      if (dateFrom)  params.set("from", dateFrom);
+      if (dateTo)    params.set("to",   dateTo);
+      if (createdBy) params.set("by",   createdBy);
+      const qs = params.toString();
+      api.get(qs ? `/gallery?${qs}` : "/gallery")
         .then(r => setGallery(Array.isArray(r.data) ? r.data : []))
         .catch(() => setGallery([]));
-    }, []);
+    }, [search, dateFrom, dateTo, createdBy]);
 
     useEffect(() => {
       const fn = () => setShowScrollTop(window.scrollY > 420);
@@ -661,18 +677,7 @@ function DatePickerBox({ label, value, onChange }) {
       } catch (e) { console.error(e); }
     };
 
-    const filteredGallery = useMemo(() => {
-      const kw = search.trim().toLowerCase();
-      return gallery.filter(item => {
-        const ok =
-          !kw ||
-          (item.prompt||"").toLowerCase().includes(kw) ||
-          (item.fileName||"").toLowerCase().includes(kw) ||
-          (item.filename||"").toLowerCase().includes(kw);
-        const d = normalizeDateOnly(item.createdAt);
-        return ok && (!dateFrom || d >= dateFrom) && (!dateTo || d <= dateTo);
-      });
-    }, [gallery, search, dateFrom, dateTo]);
+    const filteredGallery = gallery; // server-side filtered
 
     const allSelected  = filteredGallery.length > 0 && selectedIds.size === filteredGallery.length;
     const toggleAll    = () => setSelectedIds(allSelected ? new Set() : new Set(filteredGallery.map(i=>i.id)));
@@ -765,6 +770,27 @@ function DatePickerBox({ label, value, onChange }) {
                       placeholder="Search by prompt or file name..."
                       value={search}
                       onChange={e=>handleSearchChange(e.target.value)}
+                      InputProps={{ startAdornment:<SearchRoundedIcon sx={{ color:"#94a3b8", mr:1, fontSize:20 }}/> }}
+                      sx={{
+                        "& .MuiOutlinedInput-root":{
+                          borderRadius:"16px",
+                          background:"#fff",
+                          ...F,
+                          "& fieldset":{ borderColor:"rgba(35,57,113,0.18)" },
+                          "&:hover fieldset":{ borderColor:"rgba(35,57,113,0.35)" },
+                          "&.Mui-focused fieldset":{ borderColor:"#233971", borderWidth:"1.5px" },
+                        },
+                      }}
+                    />
+                  </Box>
+
+                  <Box sx={{ flex:1, minWidth:0 }}>
+                    <Typography sx={{ ...F, fontSize:"0.75rem", color:"#64748b", mb:1 }}>Filter by creator name</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Created by..."
+                      value={createdBy}
+                      onChange={e=>handleCreatedByChange(e.target.value)}
                       InputProps={{ startAdornment:<SearchRoundedIcon sx={{ color:"#94a3b8", mr:1, fontSize:20 }}/> }}
                       sx={{
                         "& .MuiOutlinedInput-root":{

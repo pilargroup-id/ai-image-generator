@@ -403,7 +403,6 @@ export default function PromptBuilderGTPage() {
                     <Typography variant="h6" sx={{ ...F, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>
                       Prompt Builder GT
                     </Typography>
-                    <Chip size="small" label="Goto / Produk Rumah" sx={{ ...F, fontWeight: 700, fontSize: "0.68rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />
                   </Stack>
                   <Typography sx={{ ...F, fontSize: "0.82rem", color: "#64748b", mt: "2px" }}>
                     Template marketplace home product — JSON prompt auto-generated
@@ -437,7 +436,6 @@ export default function PromptBuilderGTPage() {
                 {/* ── Product Info ── */}
                 <Box>
                   <SectionHeader label="Product Info" sectionKey="product" isHidden={isHidden("product")} onToggle={toggleHide}
-                    chip={<Chip size="small" label="Product" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />}
                   />
                   <Collapse in={!isHidden("product")}>
                     <Stack spacing={1.5}>

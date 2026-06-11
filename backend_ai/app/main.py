@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, Depends
+from typing import Optional
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -129,6 +130,10 @@ def get_created_at(file_path: Path) -> str:
         return "-"
 
 
+def date_only(created_at_str: str) -> str:
+    return created_at_str[:10] if created_at_str and created_at_str != "-" else ""
+
+
 # ── Public routes ─────────────────────────────────────────────────────────────
 
 @app.get("/")
@@ -147,7 +152,13 @@ def health():
 # GET gallery — butuh JWT, difilter berdasarkan departemen user
 @app.get("/gallery")
 @app.get("/api/gallery")
-async def get_gallery(current_user: dict = Depends(verify_token)):
+async def get_gallery(
+    current_user: dict = Depends(verify_token),
+    q: Optional[str]         = Query(None),
+    from_date: Optional[str] = Query(None, alias="from"),
+    to_date: Optional[str]   = Query(None, alias="to"),
+    by: Optional[str]        = Query(None),
+):
     user_dept = get_dept_category(current_user)
 
     if not OUTPUT_DIR.exists():
@@ -191,6 +202,22 @@ async def get_gallery(current_user: dict = Depends(verify_token)):
         key=lambda item: (OUTPUT_DIR / item["filename"]).stat().st_ctime,
         reverse=True,
     )
+
+    # ── Server-side filtering ──
+    if q:
+        kw = q.strip().lower()
+        items = [i for i in items if kw in i["prompt"].lower() or kw in i["fileName"].lower()]
+
+    if from_date:
+        items = [i for i in items if date_only(i["createdAt"]) >= from_date]
+
+    if to_date:
+        items = [i for i in items if date_only(i["createdAt"]) <= to_date]
+
+    if by:
+        kw = by.strip().lower()
+        items = [i for i in items if kw in (i["createdBy"] or "").lower()]
+
     return items
 
 
