@@ -456,6 +456,7 @@ function DatePickerBox({ label, value, onChange }) {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const [gallery,       setGallery]       = useState([]);
+    const [creators,      setCreators]      = useState([]);
     const [previewItem,   setPreviewItem]   = useState(null);
     const [previewZoom,   setPreviewZoom]   = useState(1);
     const [previewPan,    setPreviewPan]    = useState({ x:0, y:0 });
@@ -633,6 +634,17 @@ function DatePickerBox({ label, value, onChange }) {
     }, [search, dateFrom, dateTo, createdBy]);
 
     useEffect(() => {
+      api.get("/gallery")
+        .then(r => {
+          if (Array.isArray(r.data)) {
+            const unique = [...new Set(r.data.map(i => i.createdBy).filter(Boolean))].sort();
+            setCreators(unique);
+          }
+        })
+        .catch(() => {});
+    }, []);
+
+    useEffect(() => {
       const fn = () => setShowScrollTop(window.scrollY > 420);
       window.addEventListener("scroll", fn, { passive:true });
       fn();
@@ -785,13 +797,12 @@ function DatePickerBox({ label, value, onChange }) {
                   </Box>
 
                   <Box sx={{ flex:1, minWidth:0 }}>
-                    <Typography sx={{ ...F, fontSize:"0.75rem", color:"#64748b", mb:1 }}>Filter by creator name</Typography>
+                    <Typography sx={{ ...F, fontSize:"0.75rem", color:"#64748b", mb:1 }}>Filter by Creator</Typography>
                     <TextField
+                      select
                       fullWidth
-                      placeholder="Created by..."
                       value={createdBy}
                       onChange={e=>handleCreatedByChange(e.target.value)}
-                      InputProps={{ startAdornment:<SearchRoundedIcon sx={{ color:"#94a3b8", mr:1, fontSize:20 }}/> }}
                       sx={{
                         "& .MuiOutlinedInput-root":{
                           borderRadius:"16px",
@@ -801,8 +812,14 @@ function DatePickerBox({ label, value, onChange }) {
                           "&:hover fieldset":{ borderColor:"rgba(35,57,113,0.35)" },
                           "&.Mui-focused fieldset":{ borderColor:"#233971", borderWidth:"1.5px" },
                         },
+                        "& .MuiSelect-select":{ ...F },
                       }}
-                    />
+                    >
+                      <MenuItem value="" sx={F}>All Creators</MenuItem>
+                      {creators.map(c => (
+                        <MenuItem key={c} value={c} sx={F}>{c}</MenuItem>
+                      ))}
+                    </TextField>
                   </Box>
 
                   <DatePickerGroup

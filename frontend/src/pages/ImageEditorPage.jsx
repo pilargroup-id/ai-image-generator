@@ -221,6 +221,10 @@ const BATCH_OPTIONS = [
   { value: 2, label: "2 Images" },
   { value: 3, label: "3 Images" },
   { value: 4, label: "4 Images" },
+  { value: 5, label: "5 Images" },
+  { value: 6, label: "6 Images" },
+  { value: 7, label: "7 Images" },
+  { value: 8, label: "8 Images" },
 ];
 
 function getAspectRatioValue(v) {
@@ -592,7 +596,7 @@ function ReferenceImageSection({ refPreviews, onAdd, onRemove, onPreview, dragAc
           />
         </Stack>
         <Typography sx={{ ...F, fontSize: "0.75rem", color: "#94a3b8" }}>
-          Max 4 references
+          Max 8 references
         </Typography>
       </Stack>
 
@@ -636,7 +640,7 @@ function ReferenceImageSection({ refPreviews, onAdd, onRemove, onPreview, dragAc
                 Upload reference images (style, visual, mood)
               </Typography>
               <Typography sx={{ ...F, fontSize: "0.75rem", color: "#94a3b8" }}>
-                Drag & drop or click · PNG · JPG · WEBP · Up to 4 images
+                Drag & drop or click · PNG · JPG · WEBP · Up to 8 images
               </Typography>
             </Box>
             <Button
@@ -752,8 +756,8 @@ function ReferenceImageSection({ refPreviews, onAdd, onRemove, onPreview, dragAc
                 </Box>
               ))}
 
-              {/* Add more button if < 4 */}
-              {refPreviews.length < 4 && (
+              {/* Add more button if < 8 */}
+              {refPreviews.length < 8 && (
                 <Box
                   component="label"
                   sx={{
@@ -994,18 +998,13 @@ export default function ImageEditorPage() {
       return;
     }
 
-    if (valid.length > 4) {
-      setError("Maximum 4 images allowed.");
-      return;
-    }
-
-    setFiles(valid);
+    setFiles([valid[0]]);
     setResultUrl("");
     setBatchResults([]);
     setResultMeta(null);
     setError("");
     setSuccess("");
-    setBatchCount((prev) => (valid.length === 1 ? (prev > 4 ? 4 : prev || 1) : valid.length));
+    setBatchCount((prev) => prev || 1);
   };
 
   // ── NEW: prepare reference files
@@ -1019,7 +1018,7 @@ export default function ImageEditorPage() {
       return;
     }
 
-    const combined = [...refFiles, ...valid].slice(0, 4);
+    const combined = [...refFiles, ...valid].slice(0, 8);
     setRefFiles(combined);
     setError("");
   };
@@ -1422,7 +1421,7 @@ export default function ImageEditorPage() {
                       </Box>
                       <Box textAlign="center">
                         <Typography sx={{ ...F, fontWeight: 700, fontSize: "0.9rem", color: "#1e293b" }}>Upload image to start editing</Typography>
-                        <Typography sx={{ ...F, fontSize: "0.78rem", color: "#94a3b8" }}>Drag & drop or click · PNG · JPG · WEBP · Max 4 images</Typography>
+                        <Typography sx={{ ...F, fontSize: "0.78rem", color: "#94a3b8" }}>Drag & drop or click · PNG · JPG · WEBP</Typography>
                       </Box>
                       <Button
                         variant="contained"
@@ -1451,7 +1450,6 @@ export default function ImageEditorPage() {
                         <input
                           ref={fileInputRef}
                           hidden
-                          multiple
                           type="file"
                           accept="image/png,image/jpeg,image/jpg,image/webp"
                           onChange={handleFileChange}
@@ -1471,7 +1469,7 @@ export default function ImageEditorPage() {
                             "& .MuiAlert-icon": { color: "#233971" },
                           }}
                         >
-                          <strong>{files.length}</strong> image{files.length === 1 ? "" : "s"} selected{files.length === 1 ? "" : " · multi upload active"}
+                          <strong>{files[0]?.name || "1 image"}</strong> selected
                         </Alert>
                       )}
                     </Stack>
