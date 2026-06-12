@@ -919,29 +919,6 @@ export default function PromptBuilderPage() {
                     </Alert>
                   )}
 
-                  {manualPromptMode && (
-                    <Box sx={{ mb: 1.5 }}>
-                      <Typography sx={{ ...sectionSub, mb: 0.8 }}>
-                        Edit the prompt manually here. Copy will use this version until you turn manual edit off.
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        multiline
-                        minRows={8}
-                        value={manualPromptText}
-                        onChange={e => setManualPromptText(e.target.value)}
-                        placeholder="Type your custom prompt here..."
-                        sx={{
-                          ...darkEditorSx,
-                          "& .MuiOutlinedInput-root": {
-                            ...darkEditorSx["& .MuiOutlinedInput-root"],
-                            alignItems: "flex-start",
-                          },
-                        }}
-                      />
-                    </Box>
-                  )}
-
                   <Box sx={{
                     borderRadius: "16px",
                     border: "1.5px solid rgba(35,57,113,0.2)",
@@ -1033,20 +1010,35 @@ export default function PromptBuilderPage() {
                         </IconButton>
                       )}
                     </Stack>
-                    <Box component="pre" sx={{
-                      m: 0, p: 2,
-                      fontSize: "0.68rem",
-                      fontFamily: "monospace",
-                      color: "#e2e8f0",
-                      overflowX: "auto",
-                      maxHeight: 420,
-                      overflowY: "auto",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                      lineHeight: 1.65,
-                    }}>
-                      {searchActive ? highlightText(outputText, normalizedSearch, matchIndex) : outputText}
-                    </Box>
+                    {manualPromptMode ? (
+                      <Box
+                        component="textarea"
+                        value={manualPromptText}
+                        onChange={e => setManualPromptText(e.target.value)}
+                        spellCheck={false}
+                        sx={{
+                          display: "block", width: "100%", m: 0, p: 2,
+                          fontSize: "0.68rem", fontFamily: "monospace",
+                          color: "#e2e8f0", background: "transparent",
+                          border: "none", outline: "none", resize: "vertical",
+                          minHeight: 420, lineHeight: 1.65,
+                          whiteSpace: "pre-wrap", wordBreak: "break-word",
+                          boxSizing: "border-box",
+                          "&::selection": { background: "rgba(148,163,184,0.3)" },
+                        }}
+                      />
+                    ) : (
+                      <Box component="pre" sx={{
+                        m: 0, p: 2,
+                        fontSize: "0.68rem", fontFamily: "monospace",
+                        color: "#e2e8f0", overflowX: "auto",
+                        maxHeight: 420, overflowY: "auto",
+                        whiteSpace: "pre-wrap", wordBreak: "break-word",
+                        lineHeight: 1.65,
+                      }}>
+                        {searchActive ? highlightText(outputText, normalizedSearch, matchIndex) : outputText}
+                      </Box>
+                    )}
                   </Box>
                 </Box>
 
