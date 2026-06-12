@@ -24,12 +24,11 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded"
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded"
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded"
-import DataObjectRoundedIcon from "@mui/icons-material/DataObjectRounded"
 import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded"
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded"
 import ColorLensRoundedIcon from "@mui/icons-material/ColorLensRounded"
-import TuneRoundedIcon from "@mui/icons-material/TuneRounded"
 import BrushRoundedIcon from "@mui/icons-material/BrushRounded"
+import LayersRoundedIcon from "@mui/icons-material/LayersRounded"
 
 /* ─── Fonts & Animations ─── */
 const FontStyle = () => (
@@ -42,33 +41,6 @@ const FontStyle = () => (
   `}</style>
 )
 
-/* ─── Card background — matches ImageEditorPage exactly ─── */
-function CardBg({ variant = "left" }) {
-  const isLeft = variant === "left"
-  return (
-    <Box aria-hidden sx={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden", borderRadius: "inherit" }}>
-      <Box sx={{
-        position: "absolute", inset: 0,
-        background: isLeft
-          ? "linear-gradient(145deg, #e8edf8 0%, #f0f4fb 30%, #e6edf9 60%, #eaf0fb 100%)"
-          : "linear-gradient(145deg, #eaf0fb 0%, #e6edf9 30%, #f0f4fb 60%, #e8edf8 100%)",
-      }} />
-      <Box sx={{
-        position: "absolute", inset: 0,
-        backgroundImage: "radial-gradient(circle, rgba(35,57,113,0.18) 1px, transparent 1px)",
-        backgroundSize: "28px 28px",
-        animation: "gridPulse 6s ease-in-out infinite",
-      }} />
-      <Box sx={{ position: "absolute", top: isLeft ? "-20%" : "60%", left: isLeft ? "-10%" : "55%", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(35,57,113,0.13) 0%, transparent 70%)", animation: "orbDrift0 14s ease-in-out infinite" }} />
-      <Box sx={{ position: "absolute", top: isLeft ? "50%" : "-15%", right: isLeft ? "-8%" : "-10%", width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle, rgba(55,80,145,0.10) 0%, transparent 70%)", animation: "orbDrift1 18s ease-in-out infinite 2s" }} />
-      <Box sx={{ position: "absolute", bottom: isLeft ? "-10%" : "10%", left: isLeft ? "40%" : "10%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(35,57,113,0.09) 0%, transparent 70%)", animation: "orbDrift2 22s ease-in-out infinite 4s" }} />
-      <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: "1px", background: "linear-gradient(90deg, transparent, rgba(35,57,113,0.35), transparent)" }} />
-      <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "1px", background: "linear-gradient(90deg, transparent, rgba(35,57,113,0.22), transparent)" }} />
-    </Box>
-  )
-}
-
-/* ─── Badge icon — matches ImageEditorPage exactly ─── */
 function CardBadgeIcon({ icon, gradient, glow }) {
   return (
     <Box sx={{
@@ -87,7 +59,6 @@ function CardBadgeIcon({ icon, gradient, glow }) {
   )
 }
 
-/* ─── Shared styles ─── */
 const F = { fontFamily: "'Sora',sans-serif" }
 
 const cardShell = {
@@ -121,6 +92,18 @@ const inputSx = {
 const sectionLabel = { ...F, fontWeight: 700, fontSize: "0.83rem", color: "#1e293b" }
 const sectionSub   = { ...F, fontSize: "0.78rem", color: "#64748b" }
 
+const nativeInputSx = {
+  display: "block", width: "100%", boxSizing: "border-box",
+  padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px",
+  color: "#1e293b", background: "transparent", border: "none", outline: "none",
+}
+
+const nativeWrapSx = {
+  flex: 1, borderRadius: "14px", border: "1.5px solid rgba(35,57,113,0.22)",
+  background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", overflow: "hidden",
+  "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" },
+}
+
 function SectionHeader({ label, chip, sectionKey, isHidden, onToggle, children }) {
   return (
     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={isHidden ? 0 : 1.5}>
@@ -135,8 +118,7 @@ function SectionHeader({ label, chip, sectionKey, isHidden, onToggle, children }
             size="small"
             onClick={() => onToggle(sectionKey)}
             sx={{
-              width: 24, height: 24,
-              borderRadius: "8px",
+              width: 24, height: 24, borderRadius: "8px",
               border: isHidden ? "1.5px solid rgba(35,57,113,0.35)" : "1.5px solid rgba(239,68,68,0.3)",
               color: isHidden ? "#233971" : "#ef4444",
               background: isHidden ? "rgba(35,57,113,0.06)" : "rgba(239,68,68,0.05)",
@@ -155,16 +137,26 @@ function SectionHeader({ label, chip, sectionKey, isHidden, onToggle, children }
   )
 }
 
-const VIEW_ANGLES    = ["Front View", "Side View", "Back View", "3/4 View", "Top View", "Isometric"]
-const ASPECT_RATIOS  = ["1:1", "4:3", "16:9", "9:16", "3:4", "2:3"]
-const LIGHTING_TYPES = ["Premium Dramatic Lighting", "Soft Natural Lighting", "Studio Lighting", "Golden Hour", "High-Key Lighting", "Low-Key Lighting"]
-const DESIGN_TYPES   = ["Marketplace Main Image", "Marketplace Lifestyle Image", "Product Detail Shot", "Infographic Banner", "Social Media Post"]
+const VIEW_ANGLES   = ["Front View", "Side View", "Back View", "3/4 View", "Top View", "Isometric"]
+const ASPECT_RATIOS = ["1:1", "4:3", "16:9", "9:16", "3:4", "2:3"]
+const DESIGN_TYPES  = ["Marketplace Main Image", "Marketplace Lifestyle Image", "Product Detail Shot", "Infographic Banner", "Social Media Post"]
+
+const ADVANCED_SECTIONS = [
+  { key: "rule_number_one_most_important", label: "Rule #1" },
+  { key: "layout_instructions_do_not_render_as_text", label: "Layout Instructions" },
+  { key: "product_display", label: "Product Display" },
+  { key: "headline_styling", label: "Headline Styling" },
+  { key: "usp_styling", label: "USP Styling" },
+]
 
 const DEFAULT_DATA = {
+  rule_number_one_most_important:
+    "This image is ONE SINGLE CONTINUOUS PHOTOGRAPH from edge to edge. The construction-site background photo fills 100% of the canvas with NOTHING covering it. There are NO panels, NO cards, NO bars, NO banners, NO boxes, NO ribbons, NO color blocks, NO gradient strips — not white, not black, not dark, not transparent, not any color — anywhere in the image, especially not at the top and not behind any text. All text is typed DIRECTLY onto the photo itself, exactly like a watermark on a photograph, with only a thin soft drop shadow on the letters for readability. If text placement would require a background shape to be readable, move or resize the text instead — NEVER add a shape.",
+
   design_analysis: {
     design_type: "Marketplace Main Image",
     aspect_ratio: "1:1",
-    visual_style: "Industrial Safety Product Advertising",
+    visual_style: "Industrial Safety Product Advertising — clean photographic style, typography directly over photo",
     objective: [
       "Stop scrolling within 1-3 seconds",
       "Instantly highlight the safety vest function",
@@ -173,82 +165,105 @@ const DEFAULT_DATA = {
       "Drive clicks and marketplace conversions",
     ],
   },
+
+  visible_text_whitelist: {
+    instruction: "ONLY the texts listed below may appear as visible text in the image. Nothing else.",
+    product_name: "VIZOR SAFETY VEST",
+    tagline: "High Visibility, Safety Assured",
+    usp_labels: ["Premium Mesh Material", "Functional Pocket", "Strong Reflective"],
+  },
+
   product: {
     name: "VIZOR SAFETY VEST",
     category: "Safety Vest",
     view_angle: "Front View",
-    preservation: {
-      shape: "Preserve Exact", proportion: "Preserve Exact", material: "Preserve Exact",
-      texture: "Preserve Exact", logo: "Preserve Exact", color: "Preserve Exact", details: "Preserve Exact",
-    },
+    preservation:
+      "Preserve the exact shape, proportion, material, texture, logo, color, and all details of the original product photo. Do not redesign or alter the product.",
   },
-  target_market: ["Project Workers", "Field Technicians", "Construction Workers", "HSE Team", "Safety Officer"],
-  layout: {
-    structure: "Z Pattern",
-    frame_safe_zones: {
-      badge_reserved: "Top-left (x:0-50%, y:0-25%) — background/environment ONLY, absolutely NO product, logo, or text here",
-      headline_zone:  "Top-right (x:52-95%, y:5-24%) — product name + tagline text only",
-      hero_zone:      "Center (x:5-68%, y:27-94%) — hero product photo, large and prominent",
-      usp_zone:       "Right column (x:72-94%, y:27-94%) — USP feature icons, vertical list",
-      border_inset:   "All edges: minimum 5% clearance from canvas edge (frame border zone — keep clear)",
-    },
-    sections: {
-      top_right:  { content: "Product Name + Headline", position: "x:52-95%, y:5-24%",  width: "43%" },
-      center:     { content: "Hero Product",            position: "x:5-68%, y:27-94%",   width: "63%" },
-      right_side: { content: "USP Features",            position: "x:72-94%, y:27-94%", width: "22%" },
-    },
+
+  target_market_context:
+    "Project workers, field technicians, construction workers, HSE teams, and safety officers",
+
+  layout_instructions_do_not_render_as_text: {
+    note: "Everything in this section describes WHERE to place elements. These are layout directions only — never draw, print, or display any of these words inside the image.",
+    structure: "Z-pattern composition",
+    badge_reserved_area:
+      "The top-left area — from the left edge to the horizontal center, and from the top edge down to about one-sixth of the canvas height — shows ONLY the plain construction-site photo. No product, no logo, no text, no shapes there. Below that strip, the left side may be used normally.",
+    headline_zone:
+      "Product name and tagline typed directly over the photo in the top-right area only (right half of the canvas), right-aligned, starting a little below the top edge and ending before the upper quarter of the canvas. The headline must NOT extend into the left half of the canvas.",
+    hero_zone:
+      "The safety vest is the hero, placed large in the center and slightly left, starting below the top strip, extending down to near the bottom margin. It takes up roughly two-thirds of the canvas width, prominent and dominant.",
+    usp_zone:
+      "A vertical list of three USP feature icons with short labels along the right side, evenly spaced, kept clearly inside the right margin.",
+    frame_clearance:
+      "Keep about a 4 percent clean margin on all four edges. No text, icons, or important product details touching or near the canvas border.",
   },
+
   background: {
-    style: "Construction & Industrial Work Environment",
-    theme: "High Visibility Safety Area",
-    lighting: "Premium Dramatic Lighting",
-    tone: "Midtone, Premium, High Contrast",
-    blur_level: "Moderate Depth of Field",
-    elements: ["Construction Site", "Scaffolding", "Industrial Factory", "Safety Barriers", "Heavy Equipment", "Work Zone"],
-    purpose: "Show safety vest usage in high-risk work environments",
+    style: "Construction and industrial work environment, photographed as one seamless wide shot",
+    theme: "High-visibility safety area",
+    lighting:
+      "Premium, evenly cinematic lighting across the whole frame — the same photographic scene continues uninterrupted from the very top edge to the very bottom edge",
+    depth_of_field: "Moderate background blur so the product stays in sharp focus",
+    elements: ["Construction site", "Scaffolding", "Industrial factory", "Safety barriers", "Heavy equipment", "Work zone"],
+    purpose: "Show the safety vest being relevant to high-risk work environments",
   },
+
   product_display: {
-    position: "Center (x:5-68%, y:27-94%)", size: "60-70% of canvas", angle: "Front View", floating_effect: false,
-    shadow: { type: "Realistic Ground Shadow", opacity: "35-45%" },
-    lighting: { type: "Commercial Product Photography", reflection: "Controlled" },
+    position: "Large hero placement in the center, slightly left of the canvas, below the reserved top-left strip",
+    size: "Dominant — the vest is the largest element in the composition",
+    angle: "Front view",
+    shadow: "Soft realistic ground shadow beneath the product",
+    lighting: "Commercial product photography lighting with controlled reflections",
   },
-  headline_section: {
-    position: "Top-right (x:52-95%, y:5-24%)", alignment: "Right",
-    hierarchy: {
-      product_name: { text: "VIZOR SAFETY VEST", font_weight: "Extra Bold", color: "#FFFFFF" },
-      headline: { text: "High Visibility, Safety Assured", font_weight: "Medium", color: "#FFEE00" },
-    },
+
+  headline_styling: {
+    placement: "Top-right area only, right-aligned, typed directly on the photo",
+    product_name_style:
+      "Extra bold, clean white sans-serif, large, with a thin soft drop shadow on the letters only — the photo remains fully visible between and around the letters",
+    tagline_style:
+      "Medium weight, bright safety-yellow, smaller than the product name, same treatment — letters directly on the photo",
   },
-  usp_section: {
-    position: "Right column (x:72-94%, y:27-94%)", layout: "Vertical Icon List", spacing: "Consistent",
-    icon_style: { shape: "Circle", background: "#1E3A8A", icon_color: "#FFFFFF", uniform_size: true },
-    items: [
-      { icon: "Mesh", title: "Premium Mesh Material" },
-      { icon: "Pocket", title: "Functional Pocket" },
-      { icon: "Reflective", title: "Strong Reflective" },
+
+  usp_styling: {
+    placement: "Vertical icon list along the right side, with clear breathing room from the right edge",
+    icon_style:
+      "Three uniform circular icons, deep navy blue with white pictograms. These three small circles are the ONLY graphic shapes allowed in the entire image.",
+    label_style:
+      "Short white text label below each icon, typed directly on the photo with a thin soft drop shadow, no shape behind it, never touching the right edge",
+    icons: [
+      "Mesh fabric pictogram for 'Premium Mesh Material'",
+      "Pocket pictogram for 'Functional Pocket'",
+      "Light-reflection pictogram for 'Strong Reflective'",
     ],
   },
-  color_palette: { primary: "#1E3A8A", secondary: "#FFD500", accent: "#FFFFFF", text_dark: "#000000" },
-  visual_effects: { depth: true, layering: true, realistic_shadow: true, realistic_lighting: true, high_detail: true, premium_finish: true },
-  visual_priority: ["Safety Vest Product", "Product Name", "Headline", "USP Features", "Industrial Environment"],
-  design_formula: { product_focus: "75%", headline: "10%", usp: "10%", background_support: "5%" },
-  rendering_style: {
-    quality: "Highest Possible", photorealistic: true, commercial_grade: true, mobile_friendly: true,
-    realistic_lighting: true, realistic_shadows: true, high_detail: true, scroll_stopping: true,
+
+  color_palette: {
+    note: "Use these as color directions only — never display color codes as text in the image.",
+    primary: "deep navy blue",
+    secondary: "safety yellow",
+    accent: "white",
+    text_dark: "black",
   },
+
+  rendering_style: {
+    quality: "Highest possible, photorealistic, commercial grade",
+    effects: "Realistic lighting, realistic shadows, layered depth, premium finish, high detail",
+    mobile_friendly: true,
+    scroll_stopping: true,
+  },
+
+  final_instructions:
+    "Use a 1:1 aspect ratio, longest side at most 1920px. Do NOT change the aspect ratio. REPEAT OF RULE NUMBER ONE: the photo background runs seamlessly edge to edge with zero panels, cards, bars, banners, or color blocks of any color behind any text — text sits directly on the photo like a watermark, with only a thin soft drop shadow. The only graphic shapes in the whole image are the three navy circular USP icons. TEXT RULE: only render the texts in 'visible_text_whitelist'; never display numbers, percentages, coordinates, color codes, field names, or instruction wording. LAYOUT RULE: keep the top-left strip (left half, top one-sixth of height) as pure untouched photo because a store badge will be overlaid there later; keep the headline strictly in the right half; keep all text and icons at least 4 percent away from every edge because a thin frame border will be overlaid around the image.",
 }
 
-const DEFAULT_INSTRUCTIONS =
-  "Use aspect ratio 1:1. Output at the highest quality possible, with the longest side at most 1920px. Do NOT change the aspect ratio — keep the original image proportions exactly. CRITICAL: strictly follow frame_safe_zones — the badge_reserved area (top-left x:0-50%, y:0-25%) must contain ONLY background/environment, zero product content or text. Place product and text only in the designated hero_zone, headline_zone, and usp_zone."
-
 export default function PromptBuilderPage() {
-  const [data, setData]             = useState(DEFAULT_DATA)
-  const [instructions, setInst]     = useState(DEFAULT_INSTRUCTIONS)
-  const [copied, setCopied]         = useState(false)
-  const [newTarget, setNewTarget]   = useState("")
-  const [newElement, setNewEl]      = useState("")
-  const [newUsp, setNewUsp]         = useState("")
-  const [hidden, setHidden]         = useState(new Set())
+  const [data, setData]           = useState(DEFAULT_DATA)
+  const [copied, setCopied]       = useState(false)
+  const [newElement, setNewEl]    = useState("")
+  const [newUspLabel, setNewUspLabel] = useState("")
+  const [newUspIcon, setNewUspIcon]   = useState("")
+  const [hidden, setHidden]       = useState(new Set())
 
   const toggleHide = (key) => setHidden(prev => {
     const next = new Set(prev)
@@ -268,14 +283,20 @@ export default function PromptBuilderPage() {
     })
   }
 
-  const SECTION_KEYS = ["design_analysis", "product", "target_market", "layout", "background", "product_display", "headline_section", "usp_section", "color_palette", "visual_effects", "visual_priority", "design_formula", "rendering_style"]
+  const setProductName = (val) => {
+    setData(prev => {
+      const next = structuredClone(prev)
+      next.visible_text_whitelist.product_name = val
+      next.product.name = val
+      return next
+    })
+  }
 
   const generateOutput = () => {
     const filtered = Object.fromEntries(
       Object.entries(data).filter(([k]) => !hidden.has(k))
     )
-    const extras = instructions.trim() ? "\n\n" + instructions : ""
-    return JSON.stringify(filtered, null, 2) + extras
+    return JSON.stringify(filtered, null, 2)
   }
 
   const handleCopy = () => {
@@ -284,13 +305,46 @@ export default function PromptBuilderPage() {
     setTimeout(() => setCopied(false), 2500)
   }
 
-  const addTarget  = () => { if (!newTarget.trim()) return; set("target_market", [...data.target_market, newTarget.trim()]); setNewTarget("") }
-  const rmTarget   = i  => set("target_market", data.target_market.filter((_, j) => j !== i))
-  const addElement = () => { if (!newElement.trim()) return; set("background.elements", [...data.background.elements, newElement.trim()]); setNewEl("") }
-  const rmElement  = i  => set("background.elements", data.background.elements.filter((_, j) => j !== i))
-  const addUsp     = () => { if (!newUsp.trim()) return; set("usp_section.items", [...data.usp_section.items, { icon: "Custom", title: newUsp.trim() }]); setNewUsp("") }
-  const rmUsp      = i  => set("usp_section.items", data.usp_section.items.filter((_, j) => j !== i))
-  const editUsp    = (i, v) => { const items = structuredClone(data.usp_section.items); items[i].title = v; set("usp_section.items", items) }
+  const addElement = () => {
+    if (!newElement.trim()) return
+    set("background.elements", [...data.background.elements, newElement.trim()])
+    setNewEl("")
+  }
+  const rmElement = (i) => set("background.elements", data.background.elements.filter((_, j) => j !== i))
+
+  const addUsp = () => {
+    if (!newUspLabel.trim()) return
+    setData(prev => {
+      const next = structuredClone(prev)
+      next.visible_text_whitelist.usp_labels.push(newUspLabel.trim())
+      next.usp_styling.icons.push(newUspIcon.trim() || `Custom icon for '${newUspLabel.trim()}'`)
+      return next
+    })
+    setNewUspLabel("")
+    setNewUspIcon("")
+  }
+  const rmUsp = (i) => {
+    setData(prev => {
+      const next = structuredClone(prev)
+      next.visible_text_whitelist.usp_labels = next.visible_text_whitelist.usp_labels.filter((_, j) => j !== i)
+      next.usp_styling.icons = next.usp_styling.icons.filter((_, j) => j !== i)
+      return next
+    })
+  }
+  const editUspLabel = (i, v) => {
+    setData(prev => {
+      const next = structuredClone(prev)
+      next.visible_text_whitelist.usp_labels[i] = v
+      return next
+    })
+  }
+  const editUspIcon = (i, v) => {
+    setData(prev => {
+      const next = structuredClone(prev)
+      next.usp_styling.icons[i] = v
+      return next
+    })
+  }
 
   return (
     <Box sx={{ position: "relative", ...F }}>
@@ -348,6 +402,114 @@ export default function PromptBuilderPage() {
 
                 <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
 
+                {/* ── Visible Text Whitelist ── */}
+                <Box>
+                  <SectionHeader label="Visible Text" sectionKey="visible_text_whitelist" isHidden={isHidden("visible_text_whitelist")} onToggle={toggleHide}
+                    chip={<Chip size="small" label="Text" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />}
+                  />
+                  <Collapse in={!isHidden("visible_text_whitelist")}>
+                    <Stack spacing={1.5}>
+                      <TextField
+                        fullWidth label="Product Name" size="small"
+                        value={data.visible_text_whitelist.product_name}
+                        onChange={e => setProductName(e.target.value)}
+                        helperText="Auto-synced with product.name — write in capitals"
+                        sx={inputSx}
+                      />
+                      <TextField
+                        fullWidth label="Tagline / Headline" size="small"
+                        value={data.visible_text_whitelist.tagline}
+                        onChange={e => set("visible_text_whitelist.tagline", e.target.value)}
+                        sx={inputSx}
+                      />
+                    </Stack>
+                  </Collapse>
+                </Box>
+
+                <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
+
+                {/* ── Key Features (USP) ── */}
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography sx={sectionLabel}>Key Features (USP)</Typography>
+                      <Typography sx={{ ...sectionSub, fontSize: "0.75rem" }}>{data.visible_text_whitelist.usp_labels.length} features</Typography>
+                    </Stack>
+                    <Typography sx={{ ...sectionSub, fontSize: "0.72rem", fontStyle: "italic" }}>edits both whitelist & styling</Typography>
+                  </Stack>
+                  <Typography sx={{ ...sectionSub, mb: 1.5 }}>Each item updates the text whitelist and the icon description for USP styling</Typography>
+                  <Stack spacing={1.5}>
+                    {data.visible_text_whitelist.usp_labels.map((label, i) => (
+                      <Box key={i} sx={{ border: "1.5px solid rgba(35,57,113,0.15)", borderRadius: "16px", p: 1.5, background: "rgba(35,57,113,0.025)" }}>
+                        <Stack direction="row" spacing={1} alignItems="flex-start">
+                          <Box sx={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#233971,#2e4fa3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, mt: "2px", boxShadow: "0 4px 10px rgba(35,57,113,0.28)" }}>
+                            <Typography sx={{ ...F, color: "#fff", fontSize: "0.7rem", fontWeight: 800 }}>{i + 1}</Typography>
+                          </Box>
+                          <Stack sx={{ flex: 1 }} spacing={1}>
+                            <Box sx={{ ...nativeWrapSx }}>
+                              <input
+                                value={label}
+                                onChange={e => editUspLabel(i, e.target.value)}
+                                placeholder={`Label text (e.g. Premium Mesh Material)`}
+                                style={nativeInputSx}
+                              />
+                            </Box>
+                            <Box sx={{ ...nativeWrapSx, borderStyle: "dashed" }}>
+                              <input
+                                value={data.usp_styling.icons[i] || ""}
+                                onChange={e => editUspIcon(i, e.target.value)}
+                                placeholder={`Icon description (e.g. Mesh fabric pictogram for '...')`}
+                                style={{ ...nativeInputSx, fontSize: "13px", color: "#475569" }}
+                              />
+                            </Box>
+                          </Stack>
+                          <IconButton
+                            onClick={() => rmUsp(i)}
+                            disabled={data.visible_text_whitelist.usp_labels.length <= 1}
+                            size="small"
+                            sx={{ width: 34, height: 34, borderRadius: "10px", border: "1.5px solid rgba(239,68,68,0.25)", color: "#ef4444", background: "rgba(254,242,242,0.6)", "&:hover": { background: "rgba(239,68,68,0.08)", borderColor: "rgba(239,68,68,0.45)" }, "&.Mui-disabled": { color: "rgba(148,163,184,0.4)", borderColor: "rgba(148,163,184,0.2)", background: "transparent" } }}
+                          >
+                            <DeleteOutlineRoundedIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </Box>
+                    ))}
+
+                    {/* Add new USP */}
+                    <Box sx={{ border: "1.5px dashed rgba(35,57,113,0.25)", borderRadius: "16px", p: 1.5, background: "rgba(255,255,255,0.5)" }}>
+                      <Stack spacing={1}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Box sx={{ ...nativeWrapSx, borderStyle: "dashed" }}>
+                            <input
+                              value={newUspLabel}
+                              onChange={e => setNewUspLabel(e.target.value)}
+                              onKeyDown={e => e.key === "Enter" && addUsp()}
+                              placeholder="Label text..."
+                              style={nativeInputSx}
+                            />
+                          </Box>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Box sx={{ ...nativeWrapSx, borderStyle: "dashed" }}>
+                            <input
+                              value={newUspIcon}
+                              onChange={e => setNewUspIcon(e.target.value)}
+                              onKeyDown={e => e.key === "Enter" && addUsp()}
+                              placeholder="Icon description (optional)..."
+                              style={{ ...nativeInputSx, fontSize: "13px", color: "#475569" }}
+                            />
+                          </Box>
+                          <Button variant="contained" onClick={addUsp} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#233971,#2e4fa3)", boxShadow: "0 4px 12px rgba(35,57,113,0.32)", "&:hover": { background: "linear-gradient(135deg,#1a2d5a,#233971)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
+                            <AddRoundedIcon />
+                          </Button>
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  </Stack>
+                </Box>
+
+                <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
+
                 {/* ── Product Info ── */}
                 <Box>
                   <SectionHeader label="Product Info" sectionKey="product" isHidden={isHidden("product")} onToggle={toggleHide}
@@ -355,52 +517,13 @@ export default function PromptBuilderPage() {
                   />
                   <Collapse in={!isHidden("product")}>
                     <Stack spacing={1.5}>
-                      <TextField fullWidth label="Product Name" size="small" value={data.product.name} onChange={e => set("product.name", e.target.value)} helperText="Write in capitals. Example: VIZOR SAFETY VEST" sx={inputSx} />
                       <Stack direction="row" spacing={1.5}>
                         <TextField fullWidth label="Product Category" size="small" value={data.product.category} onChange={e => set("product.category", e.target.value)} sx={inputSx} />
                         <TextField select fullWidth label="View Angle" size="small" value={data.product.view_angle} onChange={e => set("product.view_angle", e.target.value)} sx={inputSx}>
                           {VIEW_ANGLES.map(v => <MenuItem key={v} value={v} sx={F}>{v}</MenuItem>)}
                         </TextField>
                       </Stack>
-                    </Stack>
-                  </Collapse>
-                </Box>
-
-                <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
-
-                {/* ── Headline & Text ── */}
-                <Box>
-                  <SectionHeader label="Headline & Text" sectionKey="headline_section" isHidden={isHidden("headline_section")} onToggle={toggleHide}
-                    chip={<Chip size="small" label="Text" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />}
-                  />
-                  <Collapse in={!isHidden("headline_section")}>
-                    <Stack spacing={1.5}>
-                      <Box>
-                        <Typography sx={{ ...sectionSub, mb: 0.8 }}>Main Title Text</Typography>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                          <TextField fullWidth size="small" placeholder="Example: VIZOR SAFETY VEST" value={data.headline_section.hierarchy.product_name.text} onChange={e => set("headline_section.hierarchy.product_name.text", e.target.value)} sx={inputSx} />
-                          <Box sx={{ flexShrink: 0 }}>
-                            <Typography sx={{ ...sectionSub, mb: 0.5, fontSize: "0.72rem" }}>Color</Typography>
-                            <Box sx={{ position: "relative", width: 46, height: 34, borderRadius: "10px", border: "1.5px solid rgba(35,57,113,0.25)", overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 6px rgba(35,57,113,0.12)", "&:hover": { borderColor: "rgba(35,57,113,0.45)" } }}>
-                              <input type="color" value={data.headline_section.hierarchy.product_name.color} onChange={e => set("headline_section.hierarchy.product_name.color", e.target.value)}
-                                style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }} />
-                            </Box>
-                          </Box>
-                        </Stack>
-                      </Box>
-                      <Box>
-                        <Typography sx={{ ...sectionSub, mb: 0.8 }}>Tagline / Headline</Typography>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                          <TextField fullWidth size="small" placeholder="Example: High Visibility, Safety Assured" value={data.headline_section.hierarchy.headline.text} onChange={e => set("headline_section.hierarchy.headline.text", e.target.value)} sx={inputSx} />
-                          <Box sx={{ flexShrink: 0 }}>
-                            <Typography sx={{ ...sectionSub, mb: 0.5, fontSize: "0.72rem" }}>Color</Typography>
-                            <Box sx={{ position: "relative", width: 46, height: 34, borderRadius: "10px", border: "1.5px solid rgba(35,57,113,0.25)", overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 6px rgba(35,57,113,0.12)", "&:hover": { borderColor: "rgba(35,57,113,0.45)" } }}>
-                              <input type="color" value={data.headline_section.hierarchy.headline.color} onChange={e => set("headline_section.hierarchy.headline.color", e.target.value)}
-                                style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }} />
-                            </Box>
-                          </Box>
-                        </Stack>
-                      </Box>
+                      <TextField fullWidth multiline rows={2} label="Preservation Instruction" size="small" value={data.product.preservation} onChange={e => set("product.preservation", e.target.value)} sx={inputSx} />
                     </Stack>
                   </Collapse>
                 </Box>
@@ -409,24 +532,16 @@ export default function PromptBuilderPage() {
 
                 {/* ── Target Market ── */}
                 <Box>
-                  <SectionHeader label="Target Market" sectionKey="target_market" isHidden={isHidden("target_market")} onToggle={toggleHide}>
-                    {!isHidden("target_market") && <Typography sx={{ ...sectionSub, fontSize: "0.75rem" }}>{data.target_market.length} active</Typography>}
-                  </SectionHeader>
-                  <Collapse in={!isHidden("target_market")}>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mb: 1.5 }}>
-                      {data.target_market.map((t, i) => (
-                        <Chip key={i} label={t} onDelete={() => rmTarget(i)} size="small"
-                          sx={{ borderRadius: "999px", ...F, fontWeight: 600, fontSize: "0.73rem", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)", "& .MuiChip-deleteIcon": { color: "rgba(35,57,113,0.45)", "&:hover": { color: "#233971" } } }} />
-                      ))}
-                    </Box>
-                    <Stack direction="row" spacing={1}>
-                      <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                        <input value={newTarget} onChange={e => setNewTarget(e.target.value)} onKeyDown={e => e.key === "Enter" && addTarget()} placeholder="Add target market..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
-                      </Box>
-                      <Button variant="contained" onClick={addTarget} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#233971,#2e4fa3)", boxShadow: "0 4px 12px rgba(35,57,113,0.32)", "&:hover": { background: "linear-gradient(135deg,#1a2d5a,#233971)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
-                        <AddRoundedIcon />
-                      </Button>
-                    </Stack>
+                  <SectionHeader label="Target Market" sectionKey="target_market_context" isHidden={isHidden("target_market_context")} onToggle={toggleHide} />
+                  <Collapse in={!isHidden("target_market_context")}>
+                    <TextField
+                      fullWidth multiline rows={2} size="small"
+                      label="Target Market Context"
+                      value={data.target_market_context}
+                      onChange={e => set("target_market_context", e.target.value)}
+                      helperText="Single description of who this product is for"
+                      sx={inputSx}
+                    />
                   </Collapse>
                 </Box>
 
@@ -443,9 +558,8 @@ export default function PromptBuilderPage() {
                         <TextField fullWidth label="Background Style" size="small" value={data.background.style} onChange={e => set("background.style", e.target.value)} sx={inputSx} />
                         <TextField fullWidth label="Theme" size="small" value={data.background.theme} onChange={e => set("background.theme", e.target.value)} sx={inputSx} />
                       </Stack>
-                      <TextField select fullWidth label="Lighting" size="small" value={data.background.lighting} onChange={e => set("background.lighting", e.target.value)} sx={inputSx}>
-                        {LIGHTING_TYPES.map(v => <MenuItem key={v} value={v} sx={F}>{v}</MenuItem>)}
-                      </TextField>
+                      <TextField fullWidth label="Lighting" size="small" value={data.background.lighting} onChange={e => set("background.lighting", e.target.value)} sx={inputSx} />
+                      <TextField fullWidth label="Depth of Field" size="small" value={data.background.depth_of_field} onChange={e => set("background.depth_of_field", e.target.value)} sx={inputSx} />
                       <Box>
                         <Typography sx={{ ...sectionSub, mb: 1 }}>Background Elements</Typography>
                         <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mb: 1.2 }}>
@@ -455,8 +569,8 @@ export default function PromptBuilderPage() {
                           ))}
                         </Box>
                         <Stack direction="row" spacing={1}>
-                          <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                            <input value={newElement} onChange={e => setNewEl(e.target.value)} onKeyDown={e => e.key === "Enter" && addElement()} placeholder="Example: Scaffolding, Heavy Equipment..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
+                          <Box sx={{ ...nativeWrapSx }}>
+                            <input value={newElement} onChange={e => setNewEl(e.target.value)} onKeyDown={e => e.key === "Enter" && addElement()} placeholder="Example: Scaffolding, Heavy Equipment..." style={nativeInputSx} />
                           </Box>
                           <Button variant="contained" onClick={addElement} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#166534,#16a34a)", boxShadow: "0 4px 12px rgba(22,101,52,0.28)", "&:hover": { background: "linear-gradient(135deg,#14532d,#166534)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
                             <AddRoundedIcon />
@@ -470,52 +584,17 @@ export default function PromptBuilderPage() {
 
                 <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
 
-                {/* ── Key Features (USP) ── */}
+                {/* ── Final Instructions ── */}
                 <Box>
-                  <SectionHeader label="Key Features (USP)" sectionKey="usp_section" isHidden={isHidden("usp_section")} onToggle={toggleHide}>
-                    {!isHidden("usp_section") && <Typography sx={{ ...sectionSub, fontSize: "0.75rem" }}>{data.usp_section.items.length} features</Typography>}
+                  <SectionHeader label="Final Instructions" sectionKey="final_instructions" isHidden={isHidden("final_instructions")} onToggle={toggleHide}>
+                    {!isHidden("final_instructions") && <Typography sx={{ ...sectionSub, fontSize: "0.75rem" }}>End of prompt</Typography>}
                   </SectionHeader>
-                  <Collapse in={!isHidden("usp_section")}>
-                  <Typography sx={{ ...sectionSub, mb: 1.5 }}>Displayed on the right side of the design as an icon list</Typography>
-                  <Stack spacing={1.2}>
-                    {data.usp_section.items.map((item, i) => (
-                      <Stack key={i} direction="row" spacing={1} alignItems="center">
-                        <Box sx={{ width: 30, height: 30, borderRadius: "50%", background: "linear-gradient(135deg,#233971,#2e4fa3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 10px rgba(35,57,113,0.28)" }}>
-                          <Typography sx={{ ...F, color: "#fff", fontSize: "0.72rem", fontWeight: 800 }}>{i + 1}</Typography>
-                        </Box>
-                        <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                          <input value={item.title} onChange={e => editUsp(i, e.target.value)} placeholder={`Feature ${i + 1}`} style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
-                        </Box>
-                        <IconButton onClick={() => rmUsp(i)} disabled={data.usp_section.items.length <= 1} size="small"
-                          sx={{ width: 34, height: 34, borderRadius: "10px", border: "1.5px solid rgba(239,68,68,0.25)", color: "#ef4444", background: "rgba(254,242,242,0.6)", "&:hover": { background: "rgba(239,68,68,0.08)", borderColor: "rgba(239,68,68,0.45)" }, "&.Mui-disabled": { color: "rgba(148,163,184,0.4)", borderColor: "rgba(148,163,184,0.2)", background: "transparent" } }}>
-                          <DeleteOutlineRoundedIcon fontSize="small" />
-                        </IconButton>
-                      </Stack>
-                    ))}
-                    <Stack direction="row" spacing={1}>
-                      <Box sx={{ flex: 1, borderRadius: "14px", border: "1.5px dashed rgba(35,57,113,0.28)", background: "rgba(255,255,255,0.55)", "&:focus-within": { borderColor: "#233971", borderStyle: "solid", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, overflow: "hidden" }}>
-                        <input value={newUsp} onChange={e => setNewUsp(e.target.value)} onKeyDown={e => e.key === "Enter" && addUsp()} placeholder="Add new feature..." style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 14px", fontFamily: "Sora,sans-serif", fontSize: "14px", color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
-                      </Box>
-                      <Button variant="contained" onClick={addUsp} sx={{ borderRadius: "14px", minWidth: 42, px: 1.5, background: "linear-gradient(135deg,#233971,#2e4fa3)", boxShadow: "0 4px 12px rgba(35,57,113,0.32)", "&:hover": { background: "linear-gradient(135deg,#1a2d5a,#233971)", transform: "translateY(-1px)" }, transition: "all 0.2s" }}>
-                        <AddRoundedIcon />
-                      </Button>
-                    </Stack>
-                  </Stack>
+                  <Collapse in={!isHidden("final_instructions")}>
+                    <Box sx={{ borderRadius: "16px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", transition: "border-color 0.2s, box-shadow 0.2s", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, "&:hover": { borderColor: "rgba(35,57,113,0.35)" }, overflow: "hidden" }}>
+                      <textarea value={data.final_instructions} onChange={e => set("final_instructions", e.target.value)} rows={5}
+                        style={{ display: "block", width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 100, padding: "14px 16px", fontFamily: "Sora, sans-serif", fontSize: "14px", lineHeight: 1.65, color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
+                    </Box>
                   </Collapse>
-                </Box>
-
-                <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
-
-                {/* ── Instruksi Tambahan ── */}
-                <Box>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography sx={sectionLabel}>Additional Instructions</Typography>
-                    <Typography sx={{ ...sectionSub, fontSize: "0.75rem" }}>Appended after JSON</Typography>
-                  </Stack>
-                  <Box sx={{ borderRadius: "16px", border: "1.5px solid rgba(35,57,113,0.22)", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(8px)", transition: "border-color 0.2s, box-shadow 0.2s", "&:focus-within": { borderColor: "#233971", boxShadow: "0 0 0 3px rgba(35,57,113,0.10)" }, "&:hover": { borderColor: "rgba(35,57,113,0.35)" }, overflow: "hidden" }}>
-                    <textarea value={instructions} onChange={e => setInst(e.target.value)} rows={4}
-                      style={{ display: "block", width: "100%", boxSizing: "border-box", resize: "vertical", minHeight: 90, padding: "14px 16px", fontFamily: "Sora, sans-serif", fontSize: "14px", lineHeight: 1.65, color: "#1e293b", background: "transparent", border: "none", outline: "none" }} />
-                  </Box>
                 </Box>
 
               </Stack>
@@ -543,112 +622,109 @@ export default function PromptBuilderPage() {
                     Configuration & Output
                   </Typography>
                   <Typography sx={{ ...F, fontSize: "0.82rem", color: "#64748b", mt: "2px" }}>
-                    Configure colors, effects, then copy the full prompt
+                    Toggle structural sections, colors, then copy the prompt
                   </Typography>
                 </Box>
 
                 <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
 
-                {/* ── Palet Warna ── */}
+                {/* ── Advanced Sections Toggle ── */}
                 <Box>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                    <Typography sx={sectionLabel}>Color Palette</Typography>
-                    <Chip size="small" label="Colors" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography sx={sectionLabel}>Structural Sections</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      <LayersRoundedIcon sx={{ fontSize: 14, color: "#64748b" }} />
+                      <Typography sx={{ ...sectionSub, fontSize: "0.72rem" }}>click to toggle</Typography>
+                    </Box>
                   </Stack>
-                  <Stack spacing={1.5}>
-                    {[
-                      { key: "primary",    label: "Primary Color" },
-                      { key: "secondary",  label: "Secondary Color" },
-                      { key: "accent",     label: "Accent Color" },
-                      { key: "text_dark",  label: "Dark Text" },
-                    ].map(({ key, label }) => (
-                      <Stack key={key} direction="row" spacing={1.5} alignItems="center">
-                        <Box sx={{ position: "relative", width: 38, height: 38, borderRadius: "10px", border: "1.5px solid rgba(35,57,113,0.25)", overflow: "hidden", flexShrink: 0, boxShadow: "0 2px 8px rgba(35,57,113,0.12)", cursor: "pointer", "&:hover": { borderColor: "rgba(35,57,113,0.5)" }, transition: "border-color 0.2s" }}>
-                          <input type="color" value={data.color_palette[key]} onChange={e => set(`color_palette.${key}`, e.target.value)}
-                            style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }} />
-                        </Box>
-                        <TextField value={data.color_palette[key]} onChange={e => set(`color_palette.${key}`, e.target.value)}
-                          fullWidth size="small" label={label} sx={{ ...inputSx, "& .MuiInputBase-input": { fontFamily: "monospace", fontSize: "0.85rem", letterSpacing: "0.04em" } }} />
-                      </Stack>
-                    ))}
-
-                    <Divider sx={{ borderColor: "rgba(35,57,113,0.10)", my: 0.5 }} />
-                    <Typography sx={{ ...sectionSub, fontWeight: 600 }}>USP Icon Colors</Typography>
-                    {[
-                      { key: "usp_section.icon_style.background", label: "Icon Background" },
-                      { key: "usp_section.icon_style.icon_color", label: "Icon Color" },
-                    ].map(({ key, label }) => {
-                      const val = key.split(".").reduce((o, k) => o?.[k], data) || "#000000"
+                  <Typography sx={{ ...sectionSub, mb: 1.5 }}>Include or exclude these sections from the generated JSON</Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {ADVANCED_SECTIONS.map(({ key, label }) => {
+                      const included = !isHidden(key)
                       return (
-                        <Stack key={key} direction="row" spacing={1.5} alignItems="center">
-                          <Box sx={{ position: "relative", width: 38, height: 38, borderRadius: "10px", border: "1.5px solid rgba(35,57,113,0.25)", overflow: "hidden", flexShrink: 0, boxShadow: "0 2px 8px rgba(35,57,113,0.12)", cursor: "pointer", "&:hover": { borderColor: "rgba(35,57,113,0.5)" }, transition: "border-color 0.2s" }}>
-                            <input type="color" value={val} onChange={e => set(key, e.target.value)}
-                              style={{ position: "absolute", inset: "-4px", width: "calc(100% + 8px)", height: "calc(100% + 8px)", border: "none", cursor: "pointer", padding: 0 }} />
-                          </Box>
-                          <TextField value={val} onChange={e => set(key, e.target.value)}
-                            fullWidth size="small" label={label} sx={{ ...inputSx, "& .MuiInputBase-input": { fontFamily: "monospace", fontSize: "0.85rem" } }} />
-                        </Stack>
+                        <Chip
+                          key={key}
+                          label={label}
+                          onClick={() => toggleHide(key)}
+                          sx={{
+                            cursor: "pointer", ...F, fontWeight: 600, fontSize: "0.75rem",
+                            borderRadius: "999px",
+                            background: included ? "linear-gradient(135deg,#233971,#2e4fa3)" : "rgba(35,57,113,0.06)",
+                            color: included ? "#fff" : "#94a3b8",
+                            border: included ? "none" : "1px solid rgba(35,57,113,0.18)",
+                            transition: "all 0.2s",
+                            "& .MuiChip-label": { px: 1.5 },
+                            "&:hover": {
+                              background: included ? "linear-gradient(135deg,#1a2d5a,#233971)" : "rgba(35,57,113,0.12)",
+                              color: included ? "#fff" : "#233971",
+                            },
+                          }}
+                        />
                       )
                     })}
-                  </Stack>
-                </Box>
-
-                <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
-
-                {/* ── Efek Visual ── */}
-                <Box>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                    <Typography sx={sectionLabel}>Visual Effects</Typography>
-                    <Chip size="small" label="Effects" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />
-                  </Stack>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                    {[
-                      { key: "depth",              label: "Depth Effect" },
-                      { key: "layering",            label: "Layering" },
-                      { key: "realistic_shadow",    label: "Realistic Shadow" },
-                      { key: "realistic_lighting",  label: "Realistic Lighting" },
-                      { key: "high_detail",         label: "High Detail" },
-                      { key: "premium_finish",      label: "Premium Finish" },
-                    ].map(({ key, label }) => (
-                      <FormControlLabel key={key}
-                        control={<Switch size="small" checked={data.visual_effects[key]} onChange={e => set(`visual_effects.${key}`, e.target.checked)}
-                          sx={{ "& .MuiSwitch-thumb": { bgcolor: data.visual_effects[key] ? "#233971" : undefined }, "& .MuiSwitch-track": { bgcolor: data.visual_effects[key] ? "rgba(35,57,113,0.4) !important" : undefined } }} />}
-                        label={<Typography sx={{ ...F, fontSize: "0.8rem", color: "#334155" }}>{label}</Typography>}
-                      />
-                    ))}
                   </Box>
                 </Box>
 
                 <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
 
-                {/* ── Kualitas Render ── */}
+                {/* ── Color Palette ── */}
                 <Box>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
-                    <Typography sx={sectionLabel}>Render Quality</Typography>
-                    <Chip size="small" label="Rendering" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />
-                  </Stack>
-                  <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                    {[
-                      { key: "photorealistic",     label: "Photorealistic" },
-                      { key: "commercial_grade",   label: "Commercial Grade" },
-                      { key: "mobile_friendly",    label: "Mobile Friendly" },
-                      { key: "realistic_lighting", label: "Realistic Lighting" },
-                      { key: "realistic_shadows",  label: "Realistic Shadows" },
-                      { key: "high_detail",        label: "High Detail" },
-                      { key: "scroll_stopping",    label: "Scroll Stopping" },
-                    ].map(({ key, label }) => (
-                      <FormControlLabel key={key}
-                        control={<Switch size="small" checked={data.rendering_style[key]} onChange={e => set(`rendering_style.${key}`, e.target.checked)}
-                          sx={{ "& .MuiSwitch-thumb": { bgcolor: data.rendering_style[key] ? "#233971" : undefined }, "& .MuiSwitch-track": { bgcolor: data.rendering_style[key] ? "rgba(35,57,113,0.4) !important" : undefined } }} />}
-                        label={<Typography sx={{ ...F, fontSize: "0.8rem", color: "#334155" }}>{label}</Typography>}
-                      />
-                    ))}
-                  </Box>
+                  <SectionHeader label="Color Palette" sectionKey="color_palette" isHidden={isHidden("color_palette")} onToggle={toggleHide}
+                    chip={<Chip size="small" label="Colors" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />}
+                  />
+                  <Collapse in={!isHidden("color_palette")}>
+                    <Stack spacing={1.2}>
+                      <Typography sx={{ ...sectionSub, mb: 0.5 }}>
+                        Describe colors in words — AI interprets them, no hex codes displayed in image
+                      </Typography>
+                      {[
+                        { key: "primary",   label: "Primary Color",   placeholder: "e.g. deep navy blue" },
+                        { key: "secondary", label: "Secondary Color", placeholder: "e.g. safety yellow" },
+                        { key: "accent",    label: "Accent Color",    placeholder: "e.g. white" },
+                        { key: "text_dark", label: "Dark Text Color", placeholder: "e.g. black" },
+                      ].map(({ key, label, placeholder }) => (
+                        <TextField
+                          key={key} fullWidth size="small" label={label}
+                          placeholder={placeholder}
+                          value={data.color_palette[key]}
+                          onChange={e => set(`color_palette.${key}`, e.target.value)}
+                          sx={inputSx}
+                        />
+                      ))}
+                    </Stack>
+                  </Collapse>
                 </Box>
 
                 <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
 
-                {/* ── Hasil Prompt ── */}
+                {/* ── Rendering Style ── */}
+                <Box>
+                  <SectionHeader label="Rendering Style" sectionKey="rendering_style" isHidden={isHidden("rendering_style")} onToggle={toggleHide}
+                    chip={<Chip size="small" label="Rendering" sx={{ ...F, fontWeight: 700, fontSize: "0.7rem", borderRadius: "999px", background: "rgba(35,57,113,0.08)", color: "#233971", border: "1px solid rgba(35,57,113,0.22)" }} />}
+                  />
+                  <Collapse in={!isHidden("rendering_style")}>
+                    <Stack spacing={1.5}>
+                      <TextField fullWidth label="Quality" size="small" value={data.rendering_style.quality} onChange={e => set("rendering_style.quality", e.target.value)} sx={inputSx} />
+                      <TextField fullWidth multiline rows={2} label="Effects" size="small" value={data.rendering_style.effects} onChange={e => set("rendering_style.effects", e.target.value)} sx={inputSx} />
+                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", mt: 0.5 }}>
+                        {[
+                          { key: "mobile_friendly", label: "Mobile Friendly" },
+                          { key: "scroll_stopping", label: "Scroll Stopping" },
+                        ].map(({ key, label }) => (
+                          <FormControlLabel key={key}
+                            control={<Switch size="small" checked={data.rendering_style[key]} onChange={e => set(`rendering_style.${key}`, e.target.checked)}
+                              sx={{ "& .MuiSwitch-thumb": { bgcolor: data.rendering_style[key] ? "#233971" : undefined }, "& .MuiSwitch-track": { bgcolor: data.rendering_style[key] ? "rgba(35,57,113,0.4) !important" : undefined } }} />}
+                            label={<Typography sx={{ ...F, fontSize: "0.8rem", color: "#334155" }}>{label}</Typography>}
+                          />
+                        ))}
+                      </Box>
+                    </Stack>
+                  </Collapse>
+                </Box>
+
+                <Divider sx={{ borderColor: "rgba(35,57,113,0.12)" }} />
+
+                {/* ── Prompt Output ── */}
                 <Box>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.2}>
                     <Box>
@@ -704,7 +780,7 @@ export default function PromptBuilderPage() {
                       fontFamily: "monospace",
                       color: "#e2e8f0",
                       overflowX: "auto",
-                      maxHeight: 380,
+                      maxHeight: 420,
                       overflowY: "auto",
                       whiteSpace: "pre-wrap",
                       wordBreak: "break-word",
@@ -724,4 +800,3 @@ export default function PromptBuilderPage() {
     </Box>
   )
 }
-
